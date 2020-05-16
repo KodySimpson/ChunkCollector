@@ -1,0 +1,9 @@
+name: ChunkChest
+version: 1.0-SNAPSHOT
+main: me.kodysimpson.chunkchest.ChunkChest
+api-version: 1.15
+softdepend:
+  - vault
+commands:
+  collector:
+    description: im nervous
