@@ -1,8 +1,8 @@
-package me.kodysimpson.chunkchest.tasks;
+package me.kodysimpson.chunkcollector.tasks;
 
-import me.kodysimpson.chunkchest.ChunkCollector;
-import me.kodysimpson.chunkchest.utils.Database;
-import me.kodysimpson.chunkchest.utils.Utils;
+import me.kodysimpson.chunkcollector.ChunkCollector;
+import me.kodysimpson.chunkcollector.utils.Database;
+import me.kodysimpson.chunkcollector.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
@@ -20,8 +20,6 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public class CollectDrops extends BukkitRunnable {
-
-    ArrayList<Material> mobDrops = new ArrayList<>();
 
     @Override
     public void run() {

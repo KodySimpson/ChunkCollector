@@ -1,4 +1,4 @@
-package me.kodysimpson.chunkchest.commands;
+package me.kodysimpson.chunkcollector.commands;
 
 import org.bukkit.entity.Player;
 

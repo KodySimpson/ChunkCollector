@@ -1,10 +1,10 @@
-package me.kodysimpson.chunkchest.menu.mobdrops;
+package me.kodysimpson.chunkcollector.menusystem.menus;
 
-import me.kodysimpson.chunkchest.menu.PaginatedMenu;
-import me.kodysimpson.chunkchest.menu.PlayerMenuUtility;
-import me.kodysimpson.chunkchest.utils.Collector;
-import me.kodysimpson.chunkchest.utils.Database;
-import me.kodysimpson.chunkchest.utils.Utils;
+import me.kodysimpson.chunkcollector.menusystem.PaginatedMenu;
+import me.kodysimpson.chunkcollector.menusystem.PlayerMenuUtility;
+import me.kodysimpson.chunkcollector.utils.Collector;
+import me.kodysimpson.chunkcollector.utils.Database;
+import me.kodysimpson.chunkcollector.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -14,6 +14,10 @@ import org.bukkit.inventory.ItemStack;
 import java.util.ArrayList;
 
 public class DropInventoryMenu extends PaginatedMenu {
+
+    public DropInventoryMenu(PlayerMenuUtility playerMenuUtility) {
+        super(playerMenuUtility);
+    }
 
     @Override
     public String getMenuName() {
@@ -26,7 +30,7 @@ public class DropInventoryMenu extends PaginatedMenu {
     }
 
     @Override
-    public void handleMenu(InventoryClickEvent e, PlayerMenuUtility playerMenuUtility) {
+    public void handleMenu(InventoryClickEvent e) {
         Player p = (Player) e.getWhoClicked();
 
         Collector collector = Database.findByID(playerMenuUtility.getCollectorID());
@@ -34,7 +38,7 @@ public class DropInventoryMenu extends PaginatedMenu {
 
         if (e.getCurrentItem().getType().equals(Material.BARRIER)) {
 
-            new DropCollectorMenu().open(p);
+            new DropCollectorMenu(playerMenuUtility).open();
 
         }else if(e.getCurrentItem().getType().equals(Material.DARK_OAK_BUTTON)){
             if (ChatColor.stripColor(e.getCurrentItem().getItemMeta().getDisplayName()).equalsIgnoreCase("Left")){
@@ -42,13 +46,12 @@ public class DropInventoryMenu extends PaginatedMenu {
                     p.sendMessage(ChatColor.GRAY + "You are on the first page.");
                 }else{
                     page = page - 1;
-                    page = page - 1;
-                    super.open(p);
+                    super.open();
                 }
             }else if (ChatColor.stripColor(e.getCurrentItem().getItemMeta().getDisplayName()).equalsIgnoreCase("Right")){
                 if (!((index + 1) >= drops.size())){
                     page = page + 1;
-                    super.open(p);
+                    super.open();
                 }else{
                     p.sendMessage(ChatColor.GRAY + "You are on the last page.");
                 }
@@ -57,7 +60,7 @@ public class DropInventoryMenu extends PaginatedMenu {
     }
 
     @Override
-    public void setMenuItems(PlayerMenuUtility playerMenuUtility) {
+    public void setMenuItems() {
 
         addMenuBorder();
 

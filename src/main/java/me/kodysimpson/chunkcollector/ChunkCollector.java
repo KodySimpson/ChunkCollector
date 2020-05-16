@@ -1,9 +1,9 @@
-package me.kodysimpson.chunkchest;
+package me.kodysimpson.chunkcollector;
 
-import me.kodysimpson.chunkchest.commands.CommandManager;
-import me.kodysimpson.chunkchest.listeners.CollectorListener;
-import me.kodysimpson.chunkchest.menu.PlayerMenuUtility;
-import me.kodysimpson.chunkchest.tasks.CollectDrops;
+import me.kodysimpson.chunkcollector.commands.CommandManager;
+import me.kodysimpson.chunkcollector.listeners.CollectorListener;
+import me.kodysimpson.chunkcollector.menusystem.PlayerMenuUtility;
+import me.kodysimpson.chunkcollector.tasks.CollectDrops;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;

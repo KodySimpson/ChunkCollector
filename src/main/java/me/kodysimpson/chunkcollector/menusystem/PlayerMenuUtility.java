@@ -1,6 +1,6 @@
-package me.kodysimpson.chunkchest.menu;
+package me.kodysimpson.chunkcollector.menusystem;
 
-import me.kodysimpson.chunkchest.utils.Database;
+import me.kodysimpson.chunkcollector.utils.Database;
 import org.bukkit.entity.Player;
 
 public class PlayerMenuUtility {
@@ -19,6 +19,10 @@ public class PlayerMenuUtility {
 
     public void setCollectorID(int collectorID) {
         this.collectorID = collectorID;
+    }
+
+    public Player getOwner() {
+        return owner;
     }
 
     public Database.CollectionType getType() {

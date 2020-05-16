@@ -1,9 +1,10 @@
-package me.kodysimpson.chunkchest.menu.mobdrops;
+package me.kodysimpson.chunkcollector.menusystem.menus;
 
-import me.kodysimpson.chunkchest.menu.Menu;
-import me.kodysimpson.chunkchest.menu.PlayerMenuUtility;
-import me.kodysimpson.chunkchest.utils.Collector;
-import me.kodysimpson.chunkchest.utils.Database;
+import me.kodysimpson.chunkcollector.menusystem.Menu;
+import me.kodysimpson.chunkcollector.menusystem.PlayerMenuUtility;
+import me.kodysimpson.chunkcollector.utils.Collector;
+import me.kodysimpson.chunkcollector.utils.Database;
+import me.kodysimpson.chunkcollector.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -14,6 +15,10 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.ArrayList;
 
 public class DropCollectorMenu extends Menu {
+
+    public DropCollectorMenu(PlayerMenuUtility playerMenuUtility) {
+        super(playerMenuUtility);
+    }
 
     @Override
     public String getMenuName() {
@@ -26,23 +31,23 @@ public class DropCollectorMenu extends Menu {
     }
 
     @Override
-    public void handleMenu(InventoryClickEvent e, PlayerMenuUtility playerMenuUtility) {
+    public void handleMenu(InventoryClickEvent e) {
 
         Player p = (Player) e.getWhoClicked();
 
         switch (e.getCurrentItem().getType()){
             case CHEST:
-                new DropInventoryMenu().open(p);
+                new DropInventoryMenu(playerMenuUtility).open();
                 break;
             case EMERALD:
-                new DropUpgradeMenu().open(p);
+                new DropUpgradeMenu(playerMenuUtility).open();
                 break;
         }
 
     }
 
     @Override
-    public void setMenuItems(PlayerMenuUtility playerMenuUtility) {
+    public void setMenuItems() {
 
 //        ItemStack foodCollection = new ItemStack(Material.BREAD, 1);
 //        ItemMeta foodMeta = foodCollection.getItemMeta();
@@ -57,7 +62,11 @@ public class DropCollectorMenu extends Menu {
 
         ItemStack viewDrops = new ItemStack(Material.CHEST, 1);
         ItemMeta viewMeta = viewDrops.getItemMeta();
-        viewMeta.setDisplayName(ChatColor.RED + "View Drops");
+        viewMeta.setDisplayName(ChatColor.RED + "" + ChatColor.BOLD + "View Drops");
+        ArrayList<String> viewLore = new ArrayList<>();
+        viewLore.add(ChatColor.WHITE + "----------------------------");
+        viewLore.add(ChatColor.GRAY + "Amount Stored: " + ChatColor.GREEN + collector.getItems().stream().mapToInt(ItemStack::getAmount).sum() + "/" + Utils.getCapacityAmount(collector.getStorageCapacity()));
+        viewMeta.setLore(viewLore);
         viewDrops.setItemMeta(viewMeta);
 
         ItemStack mobdropCollection = new ItemStack(Material.DIAMOND_SWORD, 1);

@@ -1,6 +1,6 @@
-package me.kodysimpson.chunkchest.commands;
+package me.kodysimpson.chunkcollector.commands;
 
-import me.kodysimpson.chunkchest.commands.subcommands.GiveCommand;
+import me.kodysimpson.chunkcollector.commands.subcommands.GiveCommand;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

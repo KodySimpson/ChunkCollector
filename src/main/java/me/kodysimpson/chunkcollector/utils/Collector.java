@@ -1,7 +1,5 @@
-package me.kodysimpson.chunkchest.utils;
+package me.kodysimpson.chunkcollector.utils;
 
-import org.bukkit.Location;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;

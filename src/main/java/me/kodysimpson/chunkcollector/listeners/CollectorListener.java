@@ -1,11 +1,11 @@
-package me.kodysimpson.chunkchest.listeners;
+package me.kodysimpson.chunkcollector.listeners;
 
-import me.kodysimpson.chunkchest.ChunkCollector;
-import me.kodysimpson.chunkchest.menu.mobdrops.DropCollectorMenu;
-import me.kodysimpson.chunkchest.menu.Menu;
-import me.kodysimpson.chunkchest.menu.PlayerMenuUtility;
-import me.kodysimpson.chunkchest.utils.Database;
-import me.kodysimpson.chunkchest.utils.Utils;
+import me.kodysimpson.chunkcollector.ChunkCollector;
+import me.kodysimpson.chunkcollector.menusystem.menus.DropCollectorMenu;
+import me.kodysimpson.chunkcollector.menusystem.Menu;
+import me.kodysimpson.chunkcollector.menusystem.PlayerMenuUtility;
+import me.kodysimpson.chunkcollector.utils.Database;
+import me.kodysimpson.chunkcollector.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
@@ -26,7 +26,7 @@ public class CollectorListener implements Listener {
     public void onBlockPlace(BlockPlaceEvent e){
 
 
-        if (e.getItemInHand().getItemMeta().getPersistentDataContainer().has(new NamespacedKey(ChunkCollector.getPlugin(), "drop-collector"), PersistentDataType.STRING)){
+        if (e.getItemInHand().getItemMeta().getPersistentDataContainer().has(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER)){
 
             //Check the chunk to see if there is already a collector
             if (Utils.isChunkTaken(e.getBlockPlaced().getChunk())){
@@ -35,15 +35,21 @@ public class CollectorListener implements Listener {
             }else{
                 TileState thing = (TileState) e.getBlockPlaced().getState();
 
-                int id = Database.createCollector(e.getPlayer().getUniqueId(), Database.CollectionType.DROP);
+                thing.getPersistentDataContainer().set(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER, e.getItemInHand().getItemMeta().getPersistentDataContainer().get(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER));
 
-                if (id != 0){
-                    thing.getPersistentDataContainer().set(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER, id);
+                thing.update();
 
-                    thing.update();
+                Bukkit.getServer().getWorld("world").spawnParticle(Particle.CAMPFIRE_SIGNAL_SMOKE, e.getBlockPlaced().getLocation(), 50);
 
-                    Bukkit.getServer().getWorld("world").spawnParticle(Particle.CAMPFIRE_SIGNAL_SMOKE, e.getBlockPlaced().getLocation(), 50);
-                }
+//                int id = Database.createCollector(e.getPlayer().getUniqueId(), Database.CollectionType.DROP);
+//
+//                if (id != 0){
+//                    thing.getPersistentDataContainer().set(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER, id);
+//
+//                    thing.update();
+//
+//                    Bukkit.getServer().getWorld("world").spawnParticle(Particle.CAMPFIRE_SIGNAL_SMOKE, e.getBlockPlaced().getLocation(), 50);
+//                }
 
             }
 
@@ -67,8 +73,7 @@ public class CollectorListener implements Listener {
                     PlayerMenuUtility playerMenuUtility = ChunkCollector.getPlayerMenuUtility(e.getPlayer());
                     playerMenuUtility.setCollectorID(collectorID);
 
-                    DropCollectorMenu menu = new DropCollectorMenu();
-                    menu.open(e.getPlayer());
+                    new DropCollectorMenu(playerMenuUtility).open();
 
                 }
 
@@ -85,8 +90,6 @@ public class CollectorListener implements Listener {
 
         //Make sure the player has a menu system object
         ChunkCollector.getPlayerMenuUtility(p);
-        //Get the player's LockManagerMenu
-        PlayerMenuUtility playerMenuUtility = ChunkCollector.getPlayerMenuUtility(p);
 
         InventoryHolder holder = e.getInventory().getHolder();
         if (holder instanceof Menu) {
@@ -95,7 +98,7 @@ public class CollectorListener implements Listener {
                 return;
             }
             Menu menu = (Menu) holder;
-            menu.handleMenu(e, playerMenuUtility);
+            menu.handleMenu(e);
         }
 
     }

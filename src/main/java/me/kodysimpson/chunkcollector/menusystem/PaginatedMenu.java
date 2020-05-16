@@ -1,21 +1,19 @@
-package me.kodysimpson.chunkchest.menu;
+package me.kodysimpson.chunkcollector.menusystem;
 
-import me.kodysimpson.chunkchest.utils.Collector;
-import me.kodysimpson.chunkchest.utils.Database;
-import me.kodysimpson.chunkchest.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-
-import java.util.ArrayList;
 
 public abstract class PaginatedMenu extends Menu {
 
     protected int page = 0;
     protected int maxItemsPerPage = 28;
     protected int index = 0;
+
+    public PaginatedMenu(PlayerMenuUtility playerMenuUtility) {
+        super(playerMenuUtility);
+    }
 
     public void addMenuBorder(){
         ItemStack left = new ItemStack(Material.DARK_OAK_BUTTON, 1);

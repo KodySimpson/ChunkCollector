@@ -1,6 +1,6 @@
-package me.kodysimpson.chunkchest.utils;
+package me.kodysimpson.chunkcollector.utils;
 
-import me.kodysimpson.chunkchest.ChunkCollector;
+import me.kodysimpson.chunkcollector.ChunkCollector;
 import org.bukkit.*;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.TileState;

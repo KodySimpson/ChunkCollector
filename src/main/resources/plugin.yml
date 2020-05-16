@@ -1,6 +1,6 @@
-name: ChunkChest
+name: ChunkCollector
 version: ${project.version}
-main: me.kodysimpson.chunkchest.ChunkChest
+main: me.kodysimpson.chunkcollector.ChunkCollector
 api-version: 1.15
 softdepend:
   - vault

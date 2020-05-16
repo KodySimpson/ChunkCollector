@@ -1,10 +1,9 @@
-package me.kodysimpson.chunkchest.commands.subcommands;
+package me.kodysimpson.chunkcollector.commands.subcommands;
 
-import me.kodysimpson.chunkchest.ChunkCollector;
-import me.kodysimpson.chunkchest.commands.SubCommand;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
+import me.kodysimpson.chunkcollector.ChunkCollector;
+import me.kodysimpson.chunkcollector.commands.SubCommand;
+import me.kodysimpson.chunkcollector.utils.Database;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -35,11 +34,20 @@ public class GiveCommand extends SubCommand {
             ItemMeta collectorMeta = collector.getItemMeta();
             collectorMeta.setDisplayName(ChatColor.LIGHT_PURPLE + "Mob Collector");
 
-            collectorMeta.getPersistentDataContainer().set(new NamespacedKey(ChunkCollector.getPlugin(), "drop-collector"), PersistentDataType.STRING, "drop-collector");
+            //Create collector and give it to the player if created succesfully
+            int id = Database.createCollector(p.getUniqueId(), Database.CollectionType.DROP);
 
-            collector.setItemMeta(collectorMeta);
+            if (id != 0){
+                collectorMeta.getPersistentDataContainer().set(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER, id);
 
-            p.getInventory().addItem(collector);
+                collector.setItemMeta(collectorMeta);
+
+                p.getInventory().addItem(collector);
+            }else{
+                p.sendMessage("Error creating collector.");
+            }
+
+
         }else if(args.length == 1){
             p.sendMessage("Specify a collector type. Types: mob or food");
             p.sendMessage("Example: /collector give mob");

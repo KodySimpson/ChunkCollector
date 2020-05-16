@@ -1,13 +1,10 @@
-package me.kodysimpson.chunkchest.utils;
+package me.kodysimpson.chunkcollector.utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
