@@ -101,13 +101,6 @@ public class CollectDrops extends BukkitRunnable {
                         System.out.println("Sending groundItems to collector in database");
                         Utils.addGroundItems(Database.findByID(tileState.getPersistentDataContainer().get(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER)), groundItems);
 
-
-//                        groundItems.stream()
-//                                .forEach(itemStack -> {
-//                                    System.out.println(itemStack.getType().toString() + " : " + itemStack.getAmount());
-//                                });
-
-
                         //Remove the entities from the ground
                         Arrays.stream(chunk.getEntities())
                                 .filter((Entity entity) -> {
