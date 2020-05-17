@@ -70,60 +70,57 @@ public class CollectDrops extends BukkitRunnable {
 
         ChunkCollector.getCrops().clear();
 
+        //Collect the drops for the worlds enabled in the config.yml
+        ChunkCollector.getPlugin().getConfig().getStringList("worlds").stream()
+                .forEach(s -> {
+                    Chunk[] loadedChunks = Bukkit.getServer().getWorld(s).getLoadedChunks();
 
-        Chunk[] loadedChunks = Bukkit.getServer().getWorld("world").getLoadedChunks();
+                    for(Chunk chunk : loadedChunks){
+                        for(BlockState blockState : chunk.getTileEntities()){
+                            TileState tileState = (TileState) blockState;
 
-        for(Chunk chunk : loadedChunks){
-            for(BlockState blockState : chunk.getTileEntities()){
-                TileState tileState = (TileState) blockState;
+                            if (tileState.getPersistentDataContainer().has(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER)){
 
-                if (tileState.getPersistentDataContainer().has(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER)){
+                                //determine what type of collector it is
+                                Collector collector = Database.findByID(tileState.getPersistentDataContainer().get(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER));
 
-                    //determine what type of collector it is
-                    Collector collector = Database.findByID(tileState.getPersistentDataContainer().get(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER));
+                                if ((collector != null) && (collector.getType() == Database.CollectionType.DROP)) {
 
-                    if ((collector != null) && (collector.getType() == Database.CollectionType.DROP)) {
+                                    System.out.println("Collector Located: #" + tileState.getPersistentDataContainer().get(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER));
 
-                        System.out.println("Collector Located: #" + tileState.getPersistentDataContainer().get(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER));
+                                    ArrayList<ItemStack> groundItems = (ArrayList<ItemStack>) Arrays.stream(chunk.getEntities())
+                                            .filter((Entity entity) -> entity.isOnGround())
+                                            .filter((Entity entity) -> entity instanceof Item)
+                                            .map((Entity entity) -> (Item) entity)
+                                            .filter(item -> Utils.isMobDrop(item))
+                                            .map(Item::getItemStack)
+                                            .collect(Collectors.toList());
 
-                        ArrayList<ItemStack> groundItems = (ArrayList<ItemStack>) Arrays.stream(chunk.getEntities())
-                                .filter((Entity entity) -> {
-                                    return entity.isOnGround();
-                                })
-                                .filter((Entity entity) -> {
-                                    return entity instanceof Item;
-                                })
-                                .map((Entity entity) -> (Item) entity)
-                                .filter(item -> Utils.isMobDrop(item))
-                                .map(Item::getItemStack)
-                                .collect(Collectors.toList());
+                                    System.out.println("Sending groundItems to collector in database");
+                                    Utils.addGroundItems(Database.findByID(tileState.getPersistentDataContainer().get(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER)), groundItems);
 
-                        System.out.println("Sending groundItems to collector in database");
-                        Utils.addGroundItems(Database.findByID(tileState.getPersistentDataContainer().get(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER)), groundItems);
+                                    //Remove the entities from the ground
+                                    Arrays.stream(chunk.getEntities())
+                                            .filter((Entity entity) -> entity.isOnGround())
+                                            .filter((Entity entity) -> entity instanceof Item)
+                                            .map((Entity entity) -> (Item) entity)
+                                            .filter(item -> Utils.isMobDrop(item))
+                                            .forEach(item -> item.remove());
 
-                        //Remove the entities from the ground
-                        Arrays.stream(chunk.getEntities())
-                                .filter((Entity entity) -> {
-                                    return entity.isOnGround();
-                                })
-                                .filter((Entity entity) -> {
-                                    return entity instanceof Item;
-                                })
-                                .map((Entity entity) -> (Item) entity)
-                                .filter(item -> Utils.isMobDrop(item))
-                                .forEach(item -> item.remove());
-
-                        //since there can only be one collector per chunk, break out of the loop
-                        break;
+                                    //since there can only be one collector per chunk, break out of the loop
+                                    break;
 
 
+                                }
+
+
+                            }
+
+                        }
                     }
+                });
 
 
-                }
-
-            }
-        }
 
 
 

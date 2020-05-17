@@ -47,7 +47,7 @@ public class CollectorListener implements Listener {
 
                 thing.update();
 
-                Bukkit.getServer().getWorld("world").spawnParticle(Particle.CAMPFIRE_SIGNAL_SMOKE, e.getBlockPlaced().getLocation(), 50);
+                e.getBlockPlaced().getWorld().spawnParticle(Particle.CAMPFIRE_SIGNAL_SMOKE, e.getBlockPlaced().getLocation(), 50);
 
             }
 
@@ -145,8 +145,6 @@ public class CollectorListener implements Listener {
             BlockState state = e.getNewState();
 
             Ageable thing = (Ageable) state.getBlockData();
-
-            System.out.println("BLOCK: " + e.getBlock().getType().toString());
 
             //We are working with a crop, see if it's at its max age
             if (thing.getAge() == thing.getMaximumAge()){
