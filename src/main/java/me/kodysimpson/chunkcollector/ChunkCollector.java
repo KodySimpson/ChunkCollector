@@ -6,10 +6,8 @@ import me.kodysimpson.chunkcollector.menusystem.PlayerMenuUtility;
 import me.kodysimpson.chunkcollector.tasks.CollectDrops;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -33,7 +31,7 @@ public final class ChunkCollector extends JavaPlugin {
 
     public static HashMap<Player, PlayerMenuUtility> playerMenuUtilityMap = new HashMap<>();
 
-    public static HashMap<Integer, ArrayList<Block>> plants = new HashMap<>();
+    public static HashMap<Integer, ArrayList<Block>> crops = new HashMap<>();
 
     @Override
     public void onEnable() {
@@ -61,7 +59,7 @@ public final class ChunkCollector extends JavaPlugin {
                 //Create the desired tables for our database if they don't exist
                 Statement statement = connection.createStatement();
                 //Table for storing all of the locks
-                statement.execute("CREATE TABLE IF NOT EXISTS Collectors(CollectorID int NOT NULL IDENTITY(1, 1), Type varchar(255), OwnerUUID varchar(255), Items clob, Sold long, Earned double, Capacity int);");
+                statement.execute("CREATE TABLE IF NOT EXISTS Collectors(CollectorID int NOT NULL IDENTITY(1, 1), Type varchar(255), OwnerUUID varchar(255), Items clob, Sold long, Earned double, Capacity int, Fortune int);");
 
                 System.out.println("Database loaded");
 
@@ -126,7 +124,7 @@ public final class ChunkCollector extends JavaPlugin {
         return econ;
     }
 
-    public static HashMap<Integer, ArrayList<Block>> getPlants() {
-        return plants;
+    public static HashMap<Integer, ArrayList<Block>> getCrops() {
+        return crops;
     }
 }

@@ -1,18 +1,18 @@
 package me.kodysimpson.chunkcollector.listeners;
 
 import me.kodysimpson.chunkcollector.ChunkCollector;
-import me.kodysimpson.chunkcollector.menusystem.menus.CollectorMenu;
 import me.kodysimpson.chunkcollector.menusystem.Menu;
 import me.kodysimpson.chunkcollector.menusystem.PlayerMenuUtility;
-import me.kodysimpson.chunkcollector.utils.Collector;
+import me.kodysimpson.chunkcollector.menusystem.menus.CollectorMenu;
 import me.kodysimpson.chunkcollector.utils.Database;
 import me.kodysimpson.chunkcollector.utils.Utils;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.TileState;
 import org.bukkit.block.data.Ageable;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -23,7 +23,6 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
@@ -156,19 +155,19 @@ public class CollectorListener implements Listener {
                 int collectorId = Utils.isCollectorInChunk(e.getBlock().getChunk());
                 if (collectorId != 0){
 
-                    if (ChunkCollector.getPlants().containsKey(collectorId)){
+                    if (ChunkCollector.getCrops().containsKey(collectorId)) {
 
-                        ArrayList<Block> items = ChunkCollector.getPlants().get(collectorId);
+                        ArrayList<Block> items = ChunkCollector.getCrops().get(collectorId);
                         items.add(e.getBlock());
 
-                        ChunkCollector.getPlants().replace(collectorId, items);
+                        ChunkCollector.getCrops().replace(collectorId, items);
 
-                    }else{
+                    } else {
 
                         ArrayList<Block> items = new ArrayList<>();
                         items.add(e.getBlock());
 
-                        ChunkCollector.getPlants().put(collectorId, items);
+                        ChunkCollector.getCrops().put(collectorId, items);
 
                     }
 

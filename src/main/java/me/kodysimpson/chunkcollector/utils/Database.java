@@ -2,29 +2,33 @@ package me.kodysimpson.chunkcollector.utils;
 
 import me.kodysimpson.chunkcollector.ChunkCollector;
 
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.UUID;
 
 public class Database {
 
-    public enum CollectionType{
-        DROP, CROP;
+    public enum CollectionType {
+        DROP, CROP
     }
 
     //Create a new collector in the database
-    public static int createCollector(UUID ownerUUID, CollectionType type){
+    public static int createCollector(UUID ownerUUID, CollectionType type) {
 
         try {
             PreparedStatement statement = ChunkCollector.getConnection()
-                    .prepareStatement("INSERT INTO Collectors(Type, OwnerUUID, Items, Capacity) VALUES (?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
-            if (type == CollectionType.CROP){
+                    .prepareStatement("INSERT INTO Collectors(Type, OwnerUUID, Items, Capacity, Fortune) VALUES (?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+            if (type == CollectionType.CROP) {
                 statement.setString(1, "CROP");
-            }else if(type == CollectionType.DROP){
+            } else if (type == CollectionType.DROP) {
                 statement.setString(1, "DROP");
             }
             statement.setString(2, ownerUUID.toString());
             statement.setString(3, " ");
             statement.setInt(4, 1);
+            statement.setInt(5, 0);
 
             statement.execute();
 
@@ -58,7 +62,7 @@ public class Database {
 
             ResultSet found = preparedStatement.executeQuery();
             while (found.next()){
-                collector = new Collector(UUID.fromString(found.getString("OwnerUUID")), id, BukkitSerialization.fromBase64(found.getString("Items")), CollectionType.valueOf(found.getString("TYPE")), found.getInt("Capacity"), found.getLong("Sold"), found.getDouble("Earned"));
+                collector = new Collector(UUID.fromString(found.getString("OwnerUUID")), id, BukkitSerialization.fromBase64(found.getString("Items")), CollectionType.valueOf(found.getString("TYPE")), found.getInt("Capacity"), found.getLong("Sold"), found.getDouble("Earned"), found.getInt("Fortune"));
             }
 
         }catch (Exception e){
@@ -70,18 +74,19 @@ public class Database {
 
     public static void updateCollector(Collector collector){
 
-        PreparedStatement statement = null;
+        PreparedStatement statement;
 
         try {
 
             statement = ChunkCollector.getConnection()
-                    .prepareStatement("UPDATE Collectors SET Type = ?, Items = ?, Sold = ?, Earned = ?, Capacity = ? WHERE CollectorID = ?");
+                    .prepareStatement("UPDATE Collectors SET Type = ?, Items = ?, Sold = ?, Earned = ?, Capacity = ?, Fortune = ? WHERE CollectorID = ?");
             statement.setString(1, collector.getType().toString());
             statement.setString(2, BukkitSerialization.toBase64(collector.getItems()));
             statement.setLong(3, collector.getSold());
             statement.setDouble(4, collector.getEarned());
             statement.setInt(5, collector.getStorageCapacity());
-            statement.setInt(6, collector.getId());
+            statement.setInt(6, collector.getFortuneLevel());
+            statement.setInt(7, collector.getId());
 
             statement.executeUpdate();
 

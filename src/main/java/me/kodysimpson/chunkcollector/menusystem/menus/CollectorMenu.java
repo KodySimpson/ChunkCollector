@@ -7,7 +7,6 @@ import me.kodysimpson.chunkcollector.utils.Database;
 import me.kodysimpson.chunkcollector.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -45,7 +44,7 @@ public class CollectorMenu extends Menu {
                 new CollectorStorageMenu(playerMenuUtility).open();
                 break;
             case EMERALD:
-                new DropUpgradeMenu(playerMenuUtility).open();
+                new CollectorUpgradeMenu(playerMenuUtility).open();
                 break;
         }
 

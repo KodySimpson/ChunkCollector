@@ -35,11 +35,8 @@ public class Utils {
                 .stream()
                 .map(Material::valueOf)
                 .collect(Collectors.toList());
-        
-        if (mob_drops.contains(item.getItemStack().getType())){
-            return true;
-        }
-        return false;
+
+        return mob_drops.contains(item.getItemStack().getType());
     }
 
     public static ArrayList<ItemStack> combine( ArrayList< ItemStack > items ) {
@@ -174,15 +171,23 @@ public class Utils {
 
     }
 
-    public static int isCollectorInChunk(Chunk chunk){
+    public static int isCollectorInChunk(Chunk chunk) {
 
-        for (BlockState blockState : chunk.getTileEntities()){
+        for (BlockState blockState : chunk.getTileEntities()) {
             TileState tileState = (TileState) blockState;
-                if (tileState.getPersistentDataContainer().has(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER)){
-                    return tileState.getPersistentDataContainer().get(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER);
-                }
+            if (tileState.getPersistentDataContainer().has(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER)) {
+                return tileState.getPersistentDataContainer().get(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER);
+            }
         }
         return 0;
+    }
+
+    public static double getFortuneUpgradePrice(int currentLevel) {
+
+        if (ChunkCollector.getPlugin().getConfig().contains("fortune-prices." + (currentLevel + 1))) {
+            return ChunkCollector.getPlugin().getConfig().getDouble("fortune-prices." + (currentLevel + 1));
+        }
+        return 0.0;
     }
 
 }

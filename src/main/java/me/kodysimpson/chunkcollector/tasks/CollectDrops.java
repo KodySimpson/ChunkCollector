@@ -12,18 +12,16 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.TileState;
 import org.bukkit.block.data.Ageable;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
-import sun.jvm.hotspot.runtime.BasicLock;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.stream.Collectors;
 
 public class CollectDrops extends BukkitRunnable {
@@ -31,7 +29,7 @@ public class CollectDrops extends BukkitRunnable {
     @Override
     public void run() {
 
-        HashMap<Integer, ArrayList<Block>> items = ChunkCollector.getPlants();
+        HashMap<Integer, ArrayList<Block>> items = ChunkCollector.getCrops();
 
         items.entrySet().stream()
                 .forEach(integerArrayListEntry -> {
@@ -43,11 +41,7 @@ public class CollectDrops extends BukkitRunnable {
                                     Ageable ageable = (Ageable) block.getWorld().getBlockAt(block.getLocation()).getState().getBlockData();
 
                                     //see if the crop is still max age
-                                    if (ageable.getAge() == ageable.getMaximumAge()){
-                                        return true;
-                                    }else{
-                                        return false;
-                                    }
+                                    return ageable.getAge() == ageable.getMaximumAge();
 
                                 }
                                 return false;
@@ -58,7 +52,14 @@ public class CollectDrops extends BukkitRunnable {
                                 BlockState blockState = block.getState();
                                 Ageable ageable = (Ageable) blockState.getBlockData();
 
-                                Utils.addCropProduce(Database.findByID(integerArrayListEntry.getKey().intValue()), (ArrayList<ItemStack>) block.getDrops());
+                                ItemStack fortuneItem = new ItemStack(Material.WOODEN_SHOVEL, 1);
+
+                                int fortuneLevel = Database.findByID(integerArrayListEntry.getKey().intValue()).getFortuneLevel();
+                                if (fortuneLevel != 0) {
+                                    fortuneItem.addEnchantment(Enchantment.LOOT_BONUS_BLOCKS, fortuneLevel);
+                                }
+
+                                Utils.addCropProduce(Database.findByID(integerArrayListEntry.getKey().intValue()), (ArrayList<ItemStack>) block.getDrops(fortuneItem));
 
                                 ageable.setAge(0);
                                 blockState.setBlockData(ageable);
@@ -67,7 +68,7 @@ public class CollectDrops extends BukkitRunnable {
                             });
                 });
 
-        ChunkCollector.getPlants().clear();
+        ChunkCollector.getCrops().clear();
 
 
         Chunk[] loadedChunks = Bukkit.getServer().getWorld("world").getLoadedChunks();
@@ -81,22 +82,16 @@ public class CollectDrops extends BukkitRunnable {
                     //determine what type of collector it is
                     Collector collector = Database.findByID(tileState.getPersistentDataContainer().get(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER));
 
-                    if (collector.getType() == Database.CollectionType.DROP){
+                    if ((collector != null) && (collector.getType() == Database.CollectionType.DROP)) {
 
                         System.out.println("Collector Located: #" + tileState.getPersistentDataContainer().get(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER));
 
                         ArrayList<ItemStack> groundItems = (ArrayList<ItemStack>) Arrays.stream(chunk.getEntities())
                                 .filter((Entity entity) -> {
-                                    if (entity.isOnGround()){
-                                        return true;
-                                    }
-                                    return false;
+                                    return entity.isOnGround();
                                 })
                                 .filter((Entity entity) -> {
-                                    if (entity instanceof Item){
-                                        return true;
-                                    }
-                                    return false;
+                                    return entity instanceof Item;
                                 })
                                 .map((Entity entity) -> (Item) entity)
                                 .filter(item -> Utils.isMobDrop(item))
@@ -116,16 +111,10 @@ public class CollectDrops extends BukkitRunnable {
                         //Remove the entities from the ground
                         Arrays.stream(chunk.getEntities())
                                 .filter((Entity entity) -> {
-                                    if (entity.isOnGround()){
-                                        return true;
-                                    }
-                                    return false;
+                                    return entity.isOnGround();
                                 })
                                 .filter((Entity entity) -> {
-                                    if (entity instanceof Item){
-                                        return true;
-                                    }
-                                    return false;
+                                    return entity instanceof Item;
                                 })
                                 .map((Entity entity) -> (Item) entity)
                                 .filter(item -> Utils.isMobDrop(item))

@@ -11,13 +11,14 @@ public class Collector {
     private UUID ownerUUID;
     private Database.CollectionType type;
     private int storageCapacity;
+    private int fortuneLevel;
 
     private long sold;
     private double earned;
 
     private ArrayList<ItemStack> items;
 
-    public Collector(UUID ownerUUID, int id, ArrayList<ItemStack> items, Database.CollectionType type, int storageCapacity, long sold, double earned) {
+    public Collector(UUID ownerUUID, int id, ArrayList<ItemStack> items, Database.CollectionType type, int storageCapacity, long sold, double earned, int fortuneLevel) {
         this.ownerUUID = ownerUUID;
         this.id = id;
         this.items = items;
@@ -25,6 +26,7 @@ public class Collector {
         this.storageCapacity = storageCapacity;
         this.sold = sold;
         this.earned = earned;
+        this.fortuneLevel = fortuneLevel;
     }
 
     public int getId() {
@@ -81,5 +83,13 @@ public class Collector {
 
     public void setEarned(double earned) {
         this.earned = earned;
+    }
+
+    public int getFortuneLevel() {
+        return fortuneLevel;
+    }
+
+    public void setFortuneLevel(int fortuneLevel) {
+        this.fortuneLevel = fortuneLevel;
     }
 }

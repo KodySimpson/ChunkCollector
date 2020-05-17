@@ -9,6 +9,11 @@ capacity-prices:
   3: 50000
   4: 200000
 
+fortune-prices:
+  1: 10000
+  2: 100000
+  3: 2000000
+
 mob-drops:
   BLAZE_ROD: 5.0
   STRING: 5.0
