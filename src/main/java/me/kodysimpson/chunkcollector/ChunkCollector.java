@@ -6,7 +6,10 @@ import me.kodysimpson.chunkcollector.menusystem.PlayerMenuUtility;
 import me.kodysimpson.chunkcollector.tasks.CollectDrops;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -15,6 +18,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
@@ -28,6 +32,8 @@ public final class ChunkCollector extends JavaPlugin {
     private static Connection connection;
 
     public static HashMap<Player, PlayerMenuUtility> playerMenuUtilityMap = new HashMap<>();
+
+    public static HashMap<Integer, ArrayList<Block>> plants = new HashMap<>();
 
     @Override
     public void onEnable() {
@@ -120,4 +126,7 @@ public final class ChunkCollector extends JavaPlugin {
         return econ;
     }
 
+    public static HashMap<Integer, ArrayList<Block>> getPlants() {
+        return plants;
+    }
 }

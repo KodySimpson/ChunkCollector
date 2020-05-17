@@ -1,6 +1,8 @@
 me\kodysimpson\chunkcollector\utils\Database$CollectionType.class
+me\kodysimpson\chunkcollector\menusystem\menus\CollectorStorageMenu.class
 me\kodysimpson\chunkcollector\menusystem\menus\DropUpgradeMenu$1.class
 me\kodysimpson\chunkcollector\utils\Database.class
+me\kodysimpson\chunkcollector\menusystem\menus\CollectorMenu$1.class
 me\kodysimpson\chunkcollector\commands\subcommands\HelpCommand.class
 me\kodysimpson\chunkcollector\tasks\CollectDrops.class
 me\kodysimpson\chunkcollector\utils\Utils.class
@@ -9,13 +11,11 @@ me\kodysimpson\chunkcollector\menusystem\PaginatedMenu.class
 me\kodysimpson\chunkcollector\commands\CommandManager.class
 me\kodysimpson\chunkcollector\utils\Collector.class
 me\kodysimpson\chunkcollector\commands\subcommands\GiveCommand.class
-me\kodysimpson\chunkcollector\menusystem\menus\DropCollectorMenu.class
-me\kodysimpson\chunkcollector\menusystem\menus\DropCollectorMenu$1.class
 me\kodysimpson\chunkcollector\menusystem\menus\DropUpgradeMenu.class
 me\kodysimpson\chunkcollector\menusystem\PlayerMenuUtility.class
 me\kodysimpson\chunkcollector\ChunkCollector.class
+me\kodysimpson\chunkcollector\menusystem\menus\CollectorMenu.class
 me\kodysimpson\chunkcollector\commands\subcommands\BuyCommand.class
 me\kodysimpson\chunkcollector\listeners\CollectorListener.class
 me\kodysimpson\chunkcollector\menusystem\Menu.class
-me\kodysimpson\chunkcollector\menusystem\menus\DropInventoryMenu.class
 me\kodysimpson\chunkcollector\utils\BukkitSerialization.class

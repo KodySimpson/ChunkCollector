@@ -91,4 +91,22 @@ public class Database {
 
     }
 
+    public static void deleteCollector(int id){
+
+        PreparedStatement statement;
+
+        try {
+
+            statement = ChunkCollector.getConnection()
+                    .prepareStatement("DELETE FROM Collectors WHERE CollectorID = ?");
+            statement.setInt(1, id);
+
+            statement.executeUpdate();
+
+        } catch (SQLException ex) {
+            System.out.println("Error deleting collector from the DB");
+        }
+
+    }
+
 }

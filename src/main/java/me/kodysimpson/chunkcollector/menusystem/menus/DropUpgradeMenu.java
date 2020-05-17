@@ -67,7 +67,7 @@ public class DropUpgradeMenu extends Menu {
 
                 break;
             case BARRIER:
-                new DropCollectorMenu(playerMenuUtility).open();
+                new CollectorMenu(playerMenuUtility).open();
         }
 
     }

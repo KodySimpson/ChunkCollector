@@ -112,6 +112,42 @@ public class Utils {
         Database.updateCollector(collector);
     }
 
+    public static void addCropProduce(Collector collector, ArrayList<ItemStack> produce){
+
+        produce.stream()
+                .forEach(itemStack -> {
+
+                    //if the collector capacity is reached, sell all
+                    if ((collector.getItems().stream().mapToInt(ItemStack::getAmount).sum() + itemStack.getAmount()) > Utils.getCapacityAmount(collector.getStorageCapacity())){
+                        collector.getItems().add(itemStack);
+
+                        collector.getItems().stream()
+                                .forEach(item -> {
+
+                                    OfflinePlayer owner = Bukkit.getOfflinePlayer(collector.getOwnerUUID());
+
+                                    ChunkCollector.getEconomy().depositPlayer(owner, (getPricing(item.getType()) * item.getAmount()));
+
+                                    collector.setSold(collector.getSold() + item.getAmount());
+                                    collector.setEarned(collector.getEarned() + (getPricing(item.getType()) * item.getAmount()));
+
+                                    if (owner.isOnline()){
+                                        owner.getPlayer().sendMessage("Sold " + item.getAmount() + " " + item.getType().toString() + " for $" + (getPricing(item.getType()) * item.getAmount()));
+                                    }
+
+
+                                });
+
+                        collector.getItems().clear();
+                    }else{
+                        collector.getItems().add(itemStack);
+                    }
+
+                });
+
+        Database.updateCollector(collector);
+    }
+
     public static int getCapacityAmount(int capacityLevel){
 
         return ChunkCollector.getPlugin().getConfig().getInt("capacity." + capacityLevel);
@@ -136,6 +172,17 @@ public class Utils {
             return 0.0;
         }
 
+    }
+
+    public static int isCollectorInChunk(Chunk chunk){
+
+        for (BlockState blockState : chunk.getTileEntities()){
+            TileState tileState = (TileState) blockState;
+                if (tileState.getPersistentDataContainer().has(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER)){
+                    return tileState.getPersistentDataContainer().get(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER);
+                }
+        }
+        return 0;
     }
 
 }

@@ -13,9 +13,9 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 
-public class DropInventoryMenu extends PaginatedMenu {
+public class CollectorStorageMenu extends PaginatedMenu {
 
-    public DropInventoryMenu(PlayerMenuUtility playerMenuUtility) {
+    public CollectorStorageMenu(PlayerMenuUtility playerMenuUtility) {
         super(playerMenuUtility);
     }
 
@@ -38,7 +38,7 @@ public class DropInventoryMenu extends PaginatedMenu {
 
         if (e.getCurrentItem().getType().equals(Material.BARRIER)) {
 
-            new DropCollectorMenu(playerMenuUtility).open();
+            new CollectorMenu(playerMenuUtility).open();
 
         }else if(e.getCurrentItem().getType().equals(Material.DARK_OAK_BUTTON)){
             if (ChatColor.stripColor(e.getCurrentItem().getItemMeta().getDisplayName()).equalsIgnoreCase("Left")){
