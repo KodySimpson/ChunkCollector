@@ -47,6 +47,10 @@ public abstract class Menu implements InventoryHolder {
         playerMenuUtility.getOwner().openInventory(inventory);
     }
 
+    public void reload(){
+        setMenuItems();
+    }
+
     //Overridden method from the InventoryHolder interface
     @Override
     public Inventory getInventory() {

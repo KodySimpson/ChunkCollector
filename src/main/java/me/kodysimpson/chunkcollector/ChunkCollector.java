@@ -4,6 +4,7 @@ import me.kodysimpson.chunkcollector.commands.CommandManager;
 import me.kodysimpson.chunkcollector.listeners.CollectorListener;
 import me.kodysimpson.chunkcollector.menusystem.PlayerMenuUtility;
 import me.kodysimpson.chunkcollector.tasks.CollectDrops;
+import me.kodysimpson.chunkcollector.utils.Database;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
@@ -27,53 +28,42 @@ public final class ChunkCollector extends JavaPlugin {
 
     private static ChunkCollector plugin;
 
-    private static Connection connection;
+    private static String url;
 
     public static HashMap<Player, PlayerMenuUtility> playerMenuUtilityMap = new HashMap<>();
 
+    //collector ID - fully grown crops
     public static HashMap<Integer, ArrayList<Block>> crops = new HashMap<>();
 
     @Override
     public void onEnable() {
         // Plugin startup logic
+
+        //Setup/Load Config
+        getConfig().options().copyDefaults();
+        saveDefaultConfig();
+        reloadConfig();
+
         plugin = this;
 
+        //Vault setup
         if (!setupEconomy() ) {
             log.severe(String.format("[%s] - Disabled due to no Vault dependency found!", getDescription().getName()));
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
 
-        //Setup Config
-        getConfig().options().copyDefaults();
-        saveDefaultConfig();
+        //Create database tables if not already generated
+        url = "jdbc:h2:" + getDataFolder().getAbsolutePath() + "/data/chunkcollector";
+        Database.initializeDatabase();
 
-        try {
-            Class.forName("org.h2.Driver");
-
-            String url = "jdbc:h2:" + getDataFolder().getAbsolutePath() + "/data/chunkchest";
-
-            try {
-                connection = DriverManager.getConnection(url);
-
-                //Create the desired tables for our database if they don't exist
-                Statement statement = connection.createStatement();
-                //Table for storing all of the locks
-                statement.execute("CREATE TABLE IF NOT EXISTS Collectors(CollectorID int NOT NULL IDENTITY(1, 1), Type varchar(255), OwnerUUID varchar(255), Items clob, Sold long, Earned double, Capacity int, Fortune int);");
-
-                System.out.println("Database loaded");
-
-            } catch (SQLException e) {
-                System.out.println("Unable to establish a connection with the database");
-            }
-        } catch (ClassNotFoundException ex) {
-            System.out.println("Unable to find the h2 DB sql driver");
-        }
-
+        //Command manager
         getCommand("collector").setExecutor(new CommandManager());
 
+        //Listeners
         Bukkit.getServer().getPluginManager().registerEvents(new CollectorListener(), this);
 
+        //Collection task
         BukkitTask task = new CollectDrops().runTaskTimer(this, 1200, 1200);
 
     }
@@ -88,8 +78,10 @@ public final class ChunkCollector extends JavaPlugin {
         return plugin;
     }
 
-    public static Connection getConnection() {
-        return connection;
+    public static String getConnectionURL() {
+
+        return url;
+
     }
 
     //Provide a player and return a menu system for that player

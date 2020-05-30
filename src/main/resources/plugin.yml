@@ -6,4 +6,5 @@ softdepend:
   - vault
 commands:
   collector:
-    description: im nervous
+    description: Commands for Chunk Collector
+    usage: /collector

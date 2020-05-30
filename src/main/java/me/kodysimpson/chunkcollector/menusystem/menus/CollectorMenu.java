@@ -21,14 +21,11 @@ public class CollectorMenu extends Menu {
 
     @Override
     public String getMenuName() {
-
-        Collector collector = Database.findByID(playerMenuUtility.getCollectorID());
-        if (collector.getType() == Database.CollectionType.DROP){
+        if (playerMenuUtility.getType() == Database.CollectionType.DROP){
             return "Mob Drop Collector";
         }else{
             return "Crop Collector";
         }
-
     }
 
     @Override
@@ -96,6 +93,9 @@ public class CollectorMenu extends Menu {
             ArrayList<String> foodLore = new ArrayList<>();
             foodLore.add(ChatColor.GREEN + "Automatically collects fully ");
             foodLore.add(ChatColor.GREEN + "grown food.");
+            foodLore.add(ChatColor.WHITE + "----------------------------");
+            foodLore.add(ChatColor.GRAY + "Total Sold: " + ChatColor.BLUE + collector.getSold());
+            foodLore.add(ChatColor.GRAY + "Total Earned: $" + ChatColor.GREEN + collector.getEarned());
             foodMeta.setLore(foodLore);
             foodCollection.setItemMeta(foodMeta);
 
@@ -111,6 +111,7 @@ public class CollectorMenu extends Menu {
 
         inventory.setItem(15, upgrade);
 
+        setFillerGlass();
     }
 
 }

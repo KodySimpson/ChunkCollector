@@ -5,8 +5,10 @@ import org.bukkit.*;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.TileState;
 import org.bukkit.entity.Item;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
@@ -14,6 +16,38 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public class Utils {
+
+    public static ItemStack makeCollector(Player p, Database.CollectionType type){
+
+        int id = 0;
+
+        ItemStack collector = new ItemStack(Material.HOPPER, 1);
+        ItemMeta collectorMeta = collector.getItemMeta();
+
+        if (type == Database.CollectionType.DROP){
+            collectorMeta.setDisplayName(ChatColor.LIGHT_PURPLE + "Mob Collector");
+
+            //Create collector and give it to the player if created succesfully
+            id = Database.createCollector(p.getUniqueId(), Database.CollectionType.DROP);
+        }else{
+            collectorMeta.setDisplayName(ChatColor.YELLOW + "Crop Collector");
+
+            //Create collector and give it to the player if created succesfully
+            id = Database.createCollector(p.getUniqueId(), Database.CollectionType.CROP);
+        }
+
+        //Collector ID will be zero if was unable to create in DB
+        if (id != 0){
+            collectorMeta.getPersistentDataContainer().set(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER, id);
+
+            collector.setItemMeta(collectorMeta);
+
+            return collector;
+        }else{
+            p.sendMessage("Error creating collector.");
+            return null;
+        }
+    }
 
     //See if the chunk provided already contains a chunk collector
     public static boolean isChunkTaken(Chunk chunk){
@@ -42,6 +76,7 @@ public class Utils {
     public static ArrayList<ItemStack> combine( ArrayList< ItemStack > items ) {
 
         Inventory test = Bukkit.createInventory(null, 54, "thing");
+        //Put all the items into a new inventory, which automatically compresseses the items
         items.stream()
                 .forEach(itemStack -> {
                     if (itemStack != null){
@@ -49,15 +84,20 @@ public class Utils {
                     }
                 });
 
-        ArrayList<ItemStack> compressed =  new ArrayList<>();
+        //Take the items from the compressed inventory and put into arraylist
+        ArrayList<ItemStack> compressed = new ArrayList<>();
         Arrays.stream(test.getContents())
-                .forEach(itemStack -> compressed.add(itemStack));
+                .forEach(itemStack -> {
+                    if (itemStack != null){
+                        compressed.add(itemStack);
+                    }
+                });
 
         return compressed;
 
     }
 
-    public static double getPricing(Material item){
+    public static double getDropPricing(Material item){
 
         ArrayList<Material> mob_drops = (ArrayList<Material>) ChunkCollector.getPlugin().getConfig().getConfigurationSection("mob-drops").getKeys(false)
                 .stream()
@@ -71,11 +111,25 @@ public class Utils {
         return 0.0;
     }
 
+    public static double getCropPricing(Material item){
 
+        ArrayList<Material> mob_drops = (ArrayList<Material>) ChunkCollector.getPlugin().getConfig().getConfigurationSection("crop-pricing").getKeys(false)
+                .stream()
+                .map(Material::valueOf)
+                .collect(Collectors.toList());
 
-    public static void addGroundItems(Collector collector, ArrayList<ItemStack> groundItems){
+        //if there is a price for the crop, then return it. otherwise, return 0 as the price
+        if (mob_drops.contains(item)){
+            return ChunkCollector.getPlugin().getConfig().getDouble("crop-pricing." + item.toString());
+        }
+
+        return 0.0;
+    }
+
+    public static void addGroundItems(Collector collector, ArrayList<Item> groundItems){
 
         groundItems.stream()
+                .map(Item::getItemStack)
                 .forEach(itemStack -> {
 
                     //if the collector capacity is reached, sell all
@@ -87,15 +141,10 @@ public class Utils {
 
                                     OfflinePlayer owner = Bukkit.getOfflinePlayer(collector.getOwnerUUID());
 
-                                    ChunkCollector.getEconomy().depositPlayer(owner, (getPricing(item.getType()) * item.getAmount()));
+                                    ChunkCollector.getEconomy().depositPlayer(owner, (getDropPricing(item.getType()) * item.getAmount()));
 
                                     collector.setSold(collector.getSold() + item.getAmount());
-                                    collector.setEarned(collector.getEarned() + (getPricing(item.getType()) * item.getAmount()));
-
-                                    if (owner.isOnline()){
-                                        owner.getPlayer().sendMessage("Sold " + item.getAmount() + " " + item.getType().toString() + " for $" + (getPricing(item.getType()) * item.getAmount()));
-                                    }
-
+                                    collector.setEarned(collector.getEarned() + (getDropPricing(item.getType()) * item.getAmount()));
 
                                 });
 
@@ -123,15 +172,10 @@ public class Utils {
 
                                     OfflinePlayer owner = Bukkit.getOfflinePlayer(collector.getOwnerUUID());
 
-                                    ChunkCollector.getEconomy().depositPlayer(owner, (getPricing(item.getType()) * item.getAmount()));
+                                    ChunkCollector.getEconomy().depositPlayer(owner, (getCropPricing(item.getType()) * item.getAmount()));
 
                                     collector.setSold(collector.getSold() + item.getAmount());
-                                    collector.setEarned(collector.getEarned() + (getPricing(item.getType()) * item.getAmount()));
-
-                                    if (owner.isOnline()){
-                                        owner.getPlayer().sendMessage("Sold " + item.getAmount() + " " + item.getType().toString() + " for $" + (getPricing(item.getType()) * item.getAmount()));
-                                    }
-
+                                    collector.setEarned(collector.getEarned() + (getCropPricing(item.getType()) * item.getAmount()));
 
                                 });
 
@@ -145,26 +189,26 @@ public class Utils {
         Database.updateCollector(collector);
     }
 
-    public static int getCapacityAmount(int capacityLevel){
+    public static int getCapacityAmount(int currentLevel){
 
-        return ChunkCollector.getPlugin().getConfig().getInt("capacity." + capacityLevel);
+        return ChunkCollector.getPlugin().getConfig().getInt("storage-upgrades." + currentLevel + ".items");
 
     }
 
-    public static String getNextCapacity(int capacityLevel){
+    public static String getNextCapacity(int currentLevel){
 
-        if (ChunkCollector.getPlugin().getConfig().contains("capacity." + (capacityLevel + 1))){
-            return String.valueOf(ChunkCollector.getPlugin().getConfig().getInt("capacity." + (capacityLevel + 1)));
+        if (ChunkCollector.getPlugin().getConfig().contains("storage-upgrades." + (currentLevel + 1) + ".items")){
+            return String.valueOf(ChunkCollector.getPlugin().getConfig().getInt("storage-upgrades." + (currentLevel + 1) + ".items"));
         }else{
             return "AT MAX";
         }
 
     }
 
-    public static double getCapacityUpgradePrice(int upgradeLevel){
+    public static double getCapacityUpgradePrice(int currentLevel){
 
-        if (ChunkCollector.getPlugin().getConfig().contains("capacity-prices." + upgradeLevel)){
-            return ChunkCollector.getPlugin().getConfig().getDouble("capacity-prices." + upgradeLevel);
+        if (ChunkCollector.getPlugin().getConfig().contains("storage-upgrades." + (currentLevel + 1) + ".price")){
+            return ChunkCollector.getPlugin().getConfig().getDouble("storage-upgrades." + (currentLevel + 1) + ".price");
         }else{
             return 0.0;
         }

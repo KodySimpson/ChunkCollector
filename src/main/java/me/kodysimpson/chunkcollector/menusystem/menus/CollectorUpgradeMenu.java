@@ -56,11 +56,13 @@ public class CollectorUpgradeMenu extends Menu {
                             System.out.println("TRANSACTION ERROR");
                             System.out.println(response.errorMessage);
                         } else {
+
+                            p.sendMessage(ChatColor.YELLOW + "Collector Storage Capacity has been upgraded.");
+                            p.sendMessage(ChatColor.GREEN + "$" + Utils.getCapacityUpgradePrice(collector.getStorageCapacity()) + ChatColor.YELLOW + " has been deducted from your balance.");
+
                             //they have enough, do the upgrade.
                             collector.setStorageCapacity(collector.getStorageCapacity() + 1);
                             Database.updateCollector(collector);
-
-                            p.sendMessage(ChatColor.YELLOW + "Collector Storage Capacity has been upgraded.");
 
                             //reload the gui
                             new CollectorUpgradeMenu(playerMenuUtility).open();
@@ -87,11 +89,12 @@ public class CollectorUpgradeMenu extends Menu {
                             System.out.println(response.errorMessage);
                         } else {
 
+                            p.sendMessage(ChatColor.YELLOW + "Collector Fortune Level has been upgraded.");
+                            p.sendMessage(ChatColor.GREEN + "$" + Utils.getFortuneUpgradePrice(collector.getFortuneLevel()) + ChatColor.YELLOW + " has been deducted from your balance.");
+
                             //do the upgrade
                             collector.setFortuneLevel(collector.getFortuneLevel() + 1);
                             Database.updateCollector(collector);
-
-                            p.sendMessage(ChatColor.YELLOW + "Collector Fortune Level has been upgraded.");
 
                             //reload the gui
                             new CollectorUpgradeMenu(playerMenuUtility).open();
@@ -147,9 +150,14 @@ public class CollectorUpgradeMenu extends Menu {
         capacityLore.add(ChatColor.GOLD + "before the items are sold.");
         capacityLore.add(ChatColor.WHITE + "------------------------");
         capacityLore.add(ChatColor.RED + "Current Capacity: " + ChatColor.GREEN + Utils.getCapacityAmount(collector.getStorageCapacity()));
-        capacityLore.add(ChatColor.YELLOW + "Next Tier: " + ChatColor.GREEN + Utils.getNextCapacity(collector.getStorageCapacity()));
         capacityLore.add(ChatColor.WHITE + "------------------------");
-        capacityLore.add(ChatColor.BLUE + "(Click To Upgrade) $" + Utils.getCapacityUpgradePrice(collector.getStorageCapacity() + 1));
+        if (Utils.getNextCapacity(collector.getStorageCapacity()).equalsIgnoreCase("AT MAX")){
+            capacityLore.add(ChatColor.GOLD + "AT MAX LEVEL");
+        }else{
+            capacityLore.add(ChatColor.YELLOW + "Next Tier: " + ChatColor.GREEN + Utils.getNextCapacity(collector.getStorageCapacity()));
+            capacityLore.add(ChatColor.BLUE + "(Click To Upgrade) $" + Utils.getCapacityUpgradePrice(collector.getStorageCapacity()));
+        }
+
         capacityMeta.setLore(capacityLore);
         capacity.setItemMeta(capacityMeta);
 
@@ -160,5 +168,7 @@ public class CollectorUpgradeMenu extends Menu {
 
         inventory.setItem(22, capacity);
         inventory.setItem(40, close);
+
+        setFillerGlass();
     }
 }

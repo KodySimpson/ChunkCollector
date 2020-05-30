@@ -7,12 +7,10 @@ import me.kodysimpson.chunkcollector.menusystem.menus.CollectorMenu;
 import me.kodysimpson.chunkcollector.utils.Collector;
 import me.kodysimpson.chunkcollector.utils.Database;
 import me.kodysimpson.chunkcollector.utils.Utils;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Particle;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.Hopper;
 import org.bukkit.block.TileState;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.entity.Player;
@@ -23,7 +21,6 @@ import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.block.BlockGrowEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -43,7 +40,7 @@ public class CollectorListener implements Listener {
 
             //Check the chunk to see if there is already a collector
             if (Utils.isChunkTaken(e.getBlockPlaced().getChunk())){
-                e.getPlayer().sendMessage(ChatColor.RED + "Collector already in this chunk.");
+                e.getPlayer().sendMessage(ChatColor.RED + "There is a Collector already in this chunk.");
                 e.setCancelled(true);
             }else{
 
@@ -58,13 +55,17 @@ public class CollectorListener implements Listener {
                 if (collector.getType() == Database.CollectionType.DROP){
                     e.getBlockPlaced().getWorld().spawnParticle(Particle.CAMPFIRE_SIGNAL_SMOKE, e.getBlockPlaced().getLocation(), 50);
                 }else if(collector.getType() == Database.CollectionType.CROP){
-                    e.getBlockPlaced().getWorld().spawnParticle(Particle.FALLING_NECTAR, e.getBlockPlaced().getLocation(), 50);
+                    e.getBlockPlaced().getWorld().spawnParticle(Particle.DRAGON_BREATH, e.getBlockPlaced().getLocation(), 50);
                 }
 
+                e.getPlayer().sendMessage(ChatColor.GREEN + "Collector placed in chunk.");
 
+                //Turn the collector into a regular hopper
+                if (e.getPlayer().getGameMode() == GameMode.CREATIVE){
+                    e.getPlayer().getInventory().setItemInMainHand(null);
+                }
 
             }
-
 
         }
 
@@ -78,22 +79,30 @@ public class CollectorListener implements Listener {
 
             if (tileState.getPersistentDataContainer().has(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER)){
 
-                if (e.getItems().size() == 0){ //means they are in creative or something
+                Collector collector = Database.findByID(tileState.getPersistentDataContainer().get(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER));
 
-                    //delete the collector from the DB
-                    Database.deleteCollector(tileState.getPersistentDataContainer().get(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER));
+                if (collector.getOwnerUUID().equals(e.getPlayer().getUniqueId())){
+                    if (e.getItems().size() == 0){ //means they are in creative or something
 
+                        //delete the collector from the DB
+                        Database.deleteCollector(tileState.getPersistentDataContainer().get(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER));
+
+                    }else{
+                        e.getItems().stream()
+                                .forEach(item -> {
+                                    ItemMeta itemMeta = item.getItemStack().getItemMeta();
+
+                                    //get the collector-id of the block broken and put it into the item dropped
+                                    itemMeta.getPersistentDataContainer().set(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER, tileState.getPersistentDataContainer().get(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER));
+
+                                    item.getItemStack().setItemMeta(itemMeta);
+                                });
+                    }
                 }else{
-                    e.getItems().stream()
-                            .forEach(item -> {
-                                ItemMeta itemMeta = item.getItemStack().getItemMeta();
-
-                                //get the collector-id of the block broken and put it into the item dropped
-                                itemMeta.getPersistentDataContainer().set(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER, tileState.getPersistentDataContainer().get(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER));
-
-                                item.getItemStack().setItemMeta(itemMeta);
-                            });
+                    e.setCancelled(true);
+                    e.getPlayer().sendMessage(ChatColor.GRAY + "You don't own this collector.");
                 }
+
             }
 
         }
@@ -112,12 +121,18 @@ public class CollectorListener implements Listener {
                 if (tileState.getPersistentDataContainer().has(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER)){
                     e.setCancelled(true);
 
-                    int collectorID = tileState.getPersistentDataContainer().get(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER);
+                    Collector collector = Database.findByID(tileState.getPersistentDataContainer().get(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER));
 
-                    PlayerMenuUtility playerMenuUtility = ChunkCollector.getPlayerMenuUtility(e.getPlayer());
-                    playerMenuUtility.setCollectorID(collectorID);
+                    //see if the person who is trying to open the collector owns it
+                    if (collector.getOwnerUUID().equals(e.getPlayer().getUniqueId())){
 
-                    new CollectorMenu(playerMenuUtility).open();
+                        PlayerMenuUtility playerMenuUtility = ChunkCollector.getPlayerMenuUtility(e.getPlayer());
+                        playerMenuUtility.setCollectorID(collector.getId());
+
+                        new CollectorMenu(playerMenuUtility).open();
+                    }else{
+                        e.getPlayer().sendMessage(ChatColor.GRAY + "You don't have access to this collector.");
+                    }
 
                 }
 
@@ -163,6 +178,7 @@ public class CollectorListener implements Listener {
                 int collectorId = Utils.isCollectorInChunk(e.getBlock().getChunk());
                 if (collectorId != 0){
 
+                    //See if the map already has this collector
                     if (ChunkCollector.getCrops().containsKey(collectorId)) {
 
                         ArrayList<Block> items = ChunkCollector.getCrops().get(collectorId);
@@ -170,7 +186,7 @@ public class CollectorListener implements Listener {
 
                         ChunkCollector.getCrops().replace(collectorId, items);
 
-                    } else {
+                    } else { //map doesnt have this collector yet
 
                         ArrayList<Block> items = new ArrayList<>();
                         items.add(e.getBlock());
@@ -192,7 +208,9 @@ public class CollectorListener implements Listener {
     public void onHopperPickup(InventoryPickupItemEvent e){
 
         if (e.getInventory().getType().equals(InventoryType.HOPPER)){
-            Block block = (Block) e.getInventory().getHolder();
+            Hopper hopper = (Hopper) e.getInventory().getHolder();
+
+            Block block = hopper.getBlock();
 
             if (block.getState() instanceof TileState){
 

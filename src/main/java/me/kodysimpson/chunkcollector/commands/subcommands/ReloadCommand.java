@@ -2,36 +2,38 @@ package me.kodysimpson.chunkcollector.commands.subcommands;
 
 import me.kodysimpson.chunkcollector.ChunkCollector;
 import me.kodysimpson.chunkcollector.commands.SubCommand;
-import me.kodysimpson.chunkcollector.menusystem.menus.BuyMenu;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
-public class BuyCommand extends SubCommand {
+public class ReloadCommand extends SubCommand {
 
     @Override
     public String getName() {
-        return "buy";
+        return "reload";
     }
 
     @Override
     public String getDescription() {
-        return "Buy a chunk collector";
+        return "Reload the configuration file";
     }
 
     @Override
     public String getSyntax() {
-        return "/collector buy";
+        return "/collector reload";
     }
 
     @Override
     public void perform(Player player, String[] args) {
 
-        if (player.hasPermission("collector.buy")){
-            new BuyMenu(ChunkCollector.getPlayerMenuUtility(player)).open();
+        if (player.hasPermission("chunkcollector.admin") || player.hasPermission("chunkcollector.reload")){
+            ChunkCollector.getPlugin().reloadConfig();
+
+            player.sendMessage(ChatColor.GREEN + "The config.yml has been reloaded.");
         }else{
             player.sendMessage(ChatColor.GREEN + "You don't have permission to run this command.");
         }
 
-    }
 
+
+    }
 }

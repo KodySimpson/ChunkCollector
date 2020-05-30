@@ -1,6 +1,9 @@
 package me.kodysimpson.chunkcollector.commands;
 
+import me.kodysimpson.chunkcollector.commands.subcommands.BuyCommand;
 import me.kodysimpson.chunkcollector.commands.subcommands.GiveCommand;
+import me.kodysimpson.chunkcollector.commands.subcommands.HelpCommand;
+import me.kodysimpson.chunkcollector.commands.subcommands.ReloadCommand;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -14,6 +17,9 @@ public class CommandManager implements CommandExecutor {
 
     public CommandManager(){
         subcommands.add(new GiveCommand());
+        subcommands.add(new BuyCommand());
+        subcommands.add(new ReloadCommand());
+        subcommands.add(new HelpCommand());
     }
 
     @Override
@@ -23,17 +29,15 @@ public class CommandManager implements CommandExecutor {
             Player p = (Player) sender;
 
             if (args.length > 0){
-                for (int i = 0; i < getSubcommands().size(); i++){
-                    if (args[0].equalsIgnoreCase(getSubcommands().get(i).getName())){
-                        getSubcommands().get(i).perform(p, args);
+                for (int i = 0; i < getSubCommands().size(); i++){
+                    if (args[0].equalsIgnoreCase(getSubCommands().get(i).getName())){
+                        getSubCommands().get(i).perform(p, args);
                     }
                 }
             }else if(args.length == 0){
-                p.sendMessage("--------------------------------");
-                for (int i = 0; i < getSubcommands().size(); i++){
-                    p.sendMessage(getSubcommands().get(i).getSyntax() + " - " + getSubcommands().get(i).getDescription());
-                }
-                p.sendMessage("--------------------------------");
+
+                new HelpCommand().perform(p, args);
+
             }
 
         }
@@ -42,7 +46,7 @@ public class CommandManager implements CommandExecutor {
         return true;
     }
 
-    public ArrayList<SubCommand> getSubcommands(){
+    public ArrayList<SubCommand> getSubCommands(){
         return subcommands;
     }
 

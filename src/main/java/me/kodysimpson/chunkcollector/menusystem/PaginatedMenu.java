@@ -5,6 +5,8 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.ArrayList;
+
 public abstract class PaginatedMenu extends Menu {
 
     protected int page = 0;
@@ -16,6 +18,18 @@ public abstract class PaginatedMenu extends Menu {
     }
 
     public void addMenuBorder(){
+
+        ItemStack sell = new ItemStack(Material.FIREWORK_ROCKET,1);
+        ItemMeta sellMeta = sell.getItemMeta();
+        sellMeta.setDisplayName(ChatColor.GREEN + "" + ChatColor.BOLD + "Sell All");
+        ArrayList<String> sellLore = new ArrayList<>();
+        sellLore.add(ChatColor.YELLOW + "Getting impatient?");
+        sellLore.add(ChatColor.YELLOW + "Sell all items in the collector.");
+        sellMeta.setLore(sellLore);
+        sell.setItemMeta(sellMeta);
+
+        inventory.setItem(46, sell);
+
         ItemStack left = new ItemStack(Material.DARK_OAK_BUTTON, 1);
         ItemMeta leftmeta = left.getItemMeta();
         leftmeta.setDisplayName(ChatColor.GREEN + "Left");

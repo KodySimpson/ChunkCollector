@@ -1,11 +1,11 @@
 package me.kodysimpson.chunkcollector.utils;
 
 import me.kodysimpson.chunkcollector.ChunkCollector;
+import org.bukkit.Bukkit;
+import org.bukkit.scheduler.BukkitRunnable;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.io.IOException;
+import java.sql.*;
 import java.util.UUID;
 
 public class Database {
@@ -14,11 +14,49 @@ public class Database {
         DROP, CROP
     }
 
+    //Create and establish connection with SQL Database
+    public static Connection getConnection() {
+        Connection connection = null;
+        try {
+            Class.forName("org.h2.Driver");
+
+            try {
+                connection = DriverManager.getConnection(ChunkCollector.getConnectionURL());
+
+            } catch (SQLException e) {
+                System.out.println("Unable to establish a connection with the database");
+            }
+        } catch (ClassNotFoundException ex) {
+            System.out.println("Unable to find the h2 DB sql driver");
+        }
+        return connection;
+    }
+
+    //Initialize database tables
+    public static void initializeDatabase() {
+
+        try {
+
+            //Create the desired tables for our database if they don't exist
+            Statement statement = getConnection().createStatement();
+            //Table for storing all of the locks
+            statement.execute("CREATE TABLE IF NOT EXISTS Collectors(CollectorID int NOT NULL IDENTITY(1, 1), Type varchar(255), OwnerUUID varchar(255), Items clob, Sold long, Earned double, Capacity int, Fortune int);");
+
+            System.out.println("Database loaded");
+
+            statement.close();
+
+        } catch (SQLException e) {
+            System.out.println("Unable to initialize database.");
+        }
+
+    }
+
     //Create a new collector in the database
     public static int createCollector(UUID ownerUUID, CollectionType type) {
 
         try {
-            PreparedStatement statement = ChunkCollector.getConnection()
+            PreparedStatement statement = getConnection()
                     .prepareStatement("INSERT INTO Collectors(Type, OwnerUUID, Items, Capacity, Fortune) VALUES (?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             if (type == CollectionType.CROP) {
                 statement.setString(1, "CROP");
@@ -35,8 +73,7 @@ public class Database {
             try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     return generatedKeys.getInt(1);
-                }
-                else {
+                } else {
                     throw new SQLException("Creating collector failed, no ID obtained.");
                 }
             }
@@ -49,36 +86,36 @@ public class Database {
         return 0;
     }
 
-    public static Collector findByID(int id){
+    public static Collector findByID(int id) {
 
-        PreparedStatement preparedStatement;
+        PreparedStatement preparedStatement = null;
         Collector collector = null;
 
-        try{
+        try {
 
-            preparedStatement = ChunkCollector.getConnection()
+            preparedStatement = getConnection()
                     .prepareStatement("SELECT * FROM Collectors WHERE CollectorID = ?");
             preparedStatement.setInt(1, id);
 
             ResultSet found = preparedStatement.executeQuery();
-            while (found.next()){
+            while (found.next()) {
                 collector = new Collector(UUID.fromString(found.getString("OwnerUUID")), id, BukkitSerialization.fromBase64(found.getString("Items")), CollectionType.valueOf(found.getString("TYPE")), found.getInt("Capacity"), found.getLong("Sold"), found.getDouble("Earned"), found.getInt("Fortune"));
             }
 
-        }catch (Exception e){
+        } catch (SQLException | IOException e) {
             e.printStackTrace();
         }
 
         return collector;
     }
 
-    public static void updateCollector(Collector collector){
+    public static void updateCollector(Collector collector) {
 
         PreparedStatement statement;
 
         try {
 
-            statement = ChunkCollector.getConnection()
+            statement = getConnection()
                     .prepareStatement("UPDATE Collectors SET Type = ?, Items = ?, Sold = ?, Earned = ?, Capacity = ?, Fortune = ? WHERE CollectorID = ?");
             statement.setString(1, collector.getType().toString());
             statement.setString(2, BukkitSerialization.toBase64(collector.getItems()));
@@ -94,15 +131,16 @@ public class Database {
             System.out.println("Error updating collector items in the database");
         }
 
+
     }
 
-    public static void deleteCollector(int id){
+    public static void deleteCollector(int id) {
 
         PreparedStatement statement;
 
         try {
 
-            statement = ChunkCollector.getConnection()
+            statement = getConnection()
                     .prepareStatement("DELETE FROM Collectors WHERE CollectorID = ?");
             statement.setInt(1, id);
 
