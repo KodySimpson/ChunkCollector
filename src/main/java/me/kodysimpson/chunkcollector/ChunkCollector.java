@@ -13,10 +13,6 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
@@ -24,55 +20,12 @@ import java.util.logging.Logger;
 public final class ChunkCollector extends JavaPlugin {
 
     private static final Logger log = Logger.getLogger("Minecraft");
-    private static Economy econ = null;
-
-    private static ChunkCollector plugin;
-
-    private static String url;
-
     public static HashMap<Player, PlayerMenuUtility> playerMenuUtilityMap = new HashMap<>();
-
     //collector ID - fully grown crops
     public static HashMap<Integer, ArrayList<Block>> crops = new HashMap<>();
-
-    @Override
-    public void onEnable() {
-        // Plugin startup logic
-
-        //Setup/Load Config
-        getConfig().options().copyDefaults();
-        saveDefaultConfig();
-        reloadConfig();
-
-        plugin = this;
-
-        //Vault setup
-        if (!setupEconomy() ) {
-            log.severe(String.format("[%s] - Disabled due to no Vault dependency found!", getDescription().getName()));
-            getServer().getPluginManager().disablePlugin(this);
-            return;
-        }
-
-        //Create database tables if not already generated
-        url = "jdbc:h2:" + getDataFolder().getAbsolutePath() + "/data/chunkcollector";
-        Database.initializeDatabase();
-
-        //Command manager
-        getCommand("collector").setExecutor(new CommandManager());
-
-        //Listeners
-        Bukkit.getServer().getPluginManager().registerEvents(new CollectorListener(), this);
-
-        //Collection task
-        BukkitTask task = new CollectDrops().runTaskTimer(this, 1200, 1200);
-
-    }
-
-    @Override
-    public void onDisable() {
-        // Plugin shutdown logic
-        log.info(String.format("[%s] Disabled Version %s", getDescription().getName(), getDescription().getVersion()));
-    }
+    private static Economy econ = null;
+    private static ChunkCollector plugin;
+    private static String url;
 
     public static ChunkCollector getPlugin() {
         return plugin;
@@ -100,6 +53,53 @@ public final class ChunkCollector extends JavaPlugin {
         }
     }
 
+    public static Economy getEconomy() {
+        return econ;
+    }
+
+    public static HashMap<Integer, ArrayList<Block>> getCrops() {
+        return crops;
+    }
+
+    @Override
+    public void onEnable() {
+        // Plugin startup logic
+
+        //Setup/Load Config
+        getConfig().options().copyDefaults();
+        saveDefaultConfig();
+        reloadConfig();
+
+        plugin = this;
+
+        //Vault setup
+        if (!setupEconomy()) {
+            log.severe(String.format("[%s] - Disabled due to no Vault dependency found!", getDescription().getName()));
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
+        //Create database tables if not already generated
+        url = "jdbc:h2:" + getDataFolder().getAbsolutePath() + "/data/chunkcollector";
+        Database.initializeDatabase();
+
+        //Command manager
+        getCommand("collector").setExecutor(new CommandManager());
+
+        //Listeners
+        Bukkit.getServer().getPluginManager().registerEvents(new CollectorListener(), this);
+
+        //Collection task
+        BukkitTask task = new CollectDrops().runTaskTimer(this, 1200, 1200);
+
+    }
+
+    @Override
+    public void onDisable() {
+        // Plugin shutdown logic
+        log.info(String.format("[%s] Disabled Version %s", getDescription().getName(), getDescription().getVersion()));
+    }
+
     private boolean setupEconomy() {
         if (getServer().getPluginManager().getPlugin("Vault") == null) {
             return false;
@@ -110,13 +110,5 @@ public final class ChunkCollector extends JavaPlugin {
         }
         econ = rsp.getProvider();
         return econ != null;
-    }
-
-    public static Economy getEconomy() {
-        return econ;
-    }
-
-    public static HashMap<Integer, ArrayList<Block>> getCrops() {
-        return crops;
     }
 }

@@ -1,5 +1,7 @@
 name: ChunkCollector
 version: ${project.version}
+website: ggservers.com
+author: Illuminatiiiiii
 main: me.kodysimpson.chunkcollector.ChunkCollector
 api-version: 1.15
 softdepend:

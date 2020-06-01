@@ -3,20 +3,14 @@ package me.kodysimpson.chunkcollector.menusystem.menus;
 import me.kodysimpson.chunkcollector.ChunkCollector;
 import me.kodysimpson.chunkcollector.menusystem.Menu;
 import me.kodysimpson.chunkcollector.menusystem.PlayerMenuUtility;
-import me.kodysimpson.chunkcollector.utils.Collector;
 import me.kodysimpson.chunkcollector.utils.Database;
 import me.kodysimpson.chunkcollector.utils.Utils;
 import net.milkbowl.vault.economy.EconomyResponse;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-
-import java.util.ArrayList;
 
 public class ConfirmBuyMenu extends Menu {
 
@@ -101,36 +95,19 @@ public class ConfirmBuyMenu extends Menu {
 
         if (playerMenuUtility.getBuyType() == Database.CollectionType.DROP){
 
-            ItemStack yes = new ItemStack(Material.DIAMOND_SWORD, 1);
-            ItemMeta yes_meta = yes.getItemMeta();
-            yes_meta.setDisplayName(ChatColor.GREEN + "" + ChatColor.BOLD + "Purchase");
-            ArrayList<String> yes_lore = new ArrayList<>();
-            yes_lore.add(ChatColor.AQUA + "Buy Drop Collector for");
-            yes_lore.add(ChatColor.GOLD + "$" + ChunkCollector.getPlugin().getConfig().getDouble("collector-cost.drop"));
-            yes_meta.setLore(yes_lore);
-            yes.setItemMeta(yes_meta);
+            inventory.setItem(3, makeItem(Material.DIAMOND_SWORD, ChatColor.GREEN + "" + ChatColor.BOLD + "Purchase",
+                    ChatColor.AQUA + "Buy Drop Collector for",
+                    ChatColor.GOLD + "$" + ChunkCollector.getPlugin().getConfig().getDouble("collector-cost.drop")));
 
-            inventory.setItem(3, yes);
         }else if(playerMenuUtility.getBuyType() == Database.CollectionType.CROP){
 
-            ItemStack yes = new ItemStack(Material.BREAD, 1);
-            ItemMeta yes_meta = yes.getItemMeta();
-            yes_meta.setDisplayName(ChatColor.GREEN + "" + ChatColor.BOLD + "Purchase");
-            ArrayList<String> yes_lore = new ArrayList<>();
-            yes_lore.add(ChatColor.AQUA + "Buy Crop Collector for");
-            yes_lore.add(ChatColor.GOLD + "$" + ChunkCollector.getPlugin().getConfig().getDouble("collector-cost.crop"));
-            yes_meta.setLore(yes_lore);
-            yes.setItemMeta(yes_meta);
+            inventory.setItem(3, makeItem(Material.BREAD, ChatColor.GREEN + "" + ChatColor.BOLD + "Purchase",
+                    ChatColor.AQUA + "Buy Crop Collector for",
+                    ChatColor.GOLD + "$" + ChunkCollector.getPlugin().getConfig().getDouble("collector-cost.crop")));
 
-            inventory.setItem(3, yes);
         }
 
-        ItemStack no = new ItemStack(Material.BARRIER, 1);
-        ItemMeta no_meta = no.getItemMeta();
-        no_meta.setDisplayName(ChatColor.DARK_RED + "" + ChatColor.BOLD + "Cancel");
-        no.setItemMeta(no_meta);
-
-        inventory.setItem(5, no);
+        inventory.setItem(5, makeItem(Material.BARRIER, ChatColor.DARK_RED + "" + ChatColor.BOLD + "Cancel"));
 
         setFillerGlass();
     }

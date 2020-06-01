@@ -1,6 +1,11 @@
 package me.kodysimpson.chunkcollector.utils;
 
 import me.kodysimpson.chunkcollector.ChunkCollector;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.chat.ComponentSerializer;
+import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.*;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.TileState;
@@ -13,6 +18,10 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class Utils {
@@ -97,87 +106,114 @@ public class Utils {
 
     }
 
-    public static double getDropPricing(Material item){
+    public static double getItemPrice(Material item, Database.CollectionType type){
 
-        ArrayList<Material> mob_drops = (ArrayList<Material>) ChunkCollector.getPlugin().getConfig().getConfigurationSection("mob-drops").getKeys(false)
-                .stream()
-                .map(Material::valueOf)
-                .collect(Collectors.toList());
-        
-        if (mob_drops.contains(item)){
-            return ChunkCollector.getPlugin().getConfig().getDouble("mob-drops." + item.toString());
+        switch (type){
+            case DROP:
+                return ChunkCollector.getPlugin().getConfig().getDouble("mob-drops." + item.toString());
+            case CROP:
+                return ChunkCollector.getPlugin().getConfig().getDouble("crop-pricing." + item.toString());
         }
 
         return 0.0;
     }
 
-    public static double getCropPricing(Material item){
+    /**
+     * Used to sell all items in a given collector.
+     * @param collectorID collector to be accessed and emptied
+     */
+    public static void sellAllItems(int collectorID){
 
-        ArrayList<Material> mob_drops = (ArrayList<Material>) ChunkCollector.getPlugin().getConfig().getConfigurationSection("crop-pricing").getKeys(false)
-                .stream()
-                .map(Material::valueOf)
-                .collect(Collectors.toList());
+        Collector collector = Database.findByID(collectorID);
 
-        //if there is a price for the crop, then return it. otherwise, return 0 as the price
-        if (mob_drops.contains(item)){
-            return ChunkCollector.getPlugin().getConfig().getDouble("crop-pricing." + item.toString());
+        System.out.println("collector id: " + collectorID);
+        System.out.println("wtftotal items about to be sold: " + collector.getItems().stream().mapToInt(ItemStack::getAmount).sum());
+
+        Player p = Bukkit.getPlayer(collector.getOwnerUUID());
+
+        ComponentBuilder receipt = new ComponentBuilder(net.md_5.bungee.api.ChatColor.GREEN + "" + net.md_5.bungee.api.ChatColor.BOLD + "Receipt of Items Sold");
+        TextComponent newLine = new TextComponent(ComponentSerializer.parse("{text: \"\n\"}"));
+        receipt.append(newLine).reset();
+
+        ArrayList<ItemStack> storage = Utils.combine(collector.getItems());
+
+        if (collector.getItems().isEmpty()) {
+            p.sendMessage(ChatColor.GRAY + "The collector is empty.");
+        } else {
+
+            long itemsSold = 0;
+            double earned = 0.0;
+
+            for (ItemStack itemStack : storage) {
+                itemsSold = itemsSold + itemStack.getAmount();
+                earned = earned + (Utils.getItemPrice(itemStack.getType(), collector.getType()) * itemStack.getAmount());
+            }
+
+            //Count each material type sold for the receipt
+            HashMap<Material, Long> countedItems = new HashMap<>();
+            storage.stream()
+                    .forEach(item -> {
+                        if (!countedItems.containsKey(item.getType())){
+                            countedItems.put(item.getType(), (long) item.getAmount());
+                        }else{
+                            countedItems.replace(item.getType(), countedItems.get(item.getType()) + item.getAmount());
+                        }
+                    });
+            //Add the counted materials to the receipt
+            countedItems.forEach(((material, aLong) -> {
+                receipt.append(new TextComponent(net.md_5.bungee.api.ChatColor.GRAY + "Sold " + aLong.toString() + " " + material.toString().toLowerCase().replace("_", " ") + " for $" + net.md_5.bungee.api.ChatColor.YELLOW + String.format("%.2f", (Utils.getItemPrice(material, collector.getType()) * aLong)))).reset();
+                receipt.append(newLine);
+            }));
+
+            receipt.append(net.md_5.bungee.api.ChatColor.GREEN + "---------------------------");
+
+            TextComponent text = new TextComponent(net.md_5.bungee.api.ChatColor.BLUE + "" + net.md_5.bungee.api.ChatColor.BOLD + "Hover for Receipt");
+            text.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, receipt.create()));
+
+            EconomyResponse transaction = ChunkCollector.getEconomy().depositPlayer(p, earned);
+
+            if (transaction.transactionSuccess()) {
+                collector.setSold(itemsSold);
+                collector.setEarned(earned);
+
+                p.sendMessage(" ");
+                if (collector.getType() == Database.CollectionType.DROP){
+                    p.sendMessage(ChatColor.GREEN + "All items in your " + ChatColor.LIGHT_PURPLE + "" + ChatColor.BOLD + "Drop Collector" + ChatColor.GREEN + " have been sold.");
+                }else{
+                    p.sendMessage(ChatColor.GREEN + "All items in your " + ChatColor.YELLOW + "" + ChatColor.BOLD + "Crop Collector" + ChatColor.GREEN + " have been sold.");
+                }
+                p.sendMessage(ChatColor.GRAY + "Total Earned: " + ChatColor.GREEN + "$" + String.format("%.2f", earned));
+                p.sendMessage(ChatColor.GRAY + "Total Sold: " + ChatColor.GREEN + itemsSold);
+                p.sendMessage(" ");
+
+                p.spigot().sendMessage(text);
+
+                //Update the collector to reflect the earnings
+                collector.getItems().clear();
+                Database.updateCollector(collector);
+            }
+
         }
 
-        return 0.0;
     }
 
-    public static void addGroundItems(Collector collector, ArrayList<Item> groundItems){
+    /**
+     * Takes a collector and a list of items to put into that collector.
+     * If the collector is full while trying to add item, sell all items before
+     * adding more.
+     * @param collector Collector that the items should be added to
+     * @param items The items that will be stored into the collector
+     */
+    public static void processItems(Collector collector, ArrayList<ItemStack> items){
 
-        groundItems.stream()
-                .map(Item::getItemStack)
+        items.stream()
                 .forEach(itemStack -> {
 
                     //if the collector capacity is reached, sell all
                     if ((collector.getItems().stream().mapToInt(ItemStack::getAmount).sum() + itemStack.getAmount()) > Utils.getCapacityAmount(collector.getStorageCapacity())){
                         collector.getItems().add(itemStack);
 
-                        collector.getItems().stream()
-                                .forEach(item -> {
-
-                                    OfflinePlayer owner = Bukkit.getOfflinePlayer(collector.getOwnerUUID());
-
-                                    ChunkCollector.getEconomy().depositPlayer(owner, (getDropPricing(item.getType()) * item.getAmount()));
-
-                                    collector.setSold(collector.getSold() + item.getAmount());
-                                    collector.setEarned(collector.getEarned() + (getDropPricing(item.getType()) * item.getAmount()));
-
-                                });
-
-                        collector.getItems().clear();
-                    }else{
-                        collector.getItems().add(itemStack);
-                    }
-
-                });
-
-        Database.updateCollector(collector);
-    }
-
-    public static void addCropProduce(Collector collector, ArrayList<ItemStack> produce){
-
-        produce.stream()
-                .forEach(itemStack -> {
-
-                    //if the collector capacity is reached, sell all
-                    if ((collector.getItems().stream().mapToInt(ItemStack::getAmount).sum() + itemStack.getAmount()) > Utils.getCapacityAmount(collector.getStorageCapacity())){
-                        collector.getItems().add(itemStack);
-
-                        collector.getItems().stream()
-                                .forEach(item -> {
-
-                                    OfflinePlayer owner = Bukkit.getOfflinePlayer(collector.getOwnerUUID());
-
-                                    ChunkCollector.getEconomy().depositPlayer(owner, (getCropPricing(item.getType()) * item.getAmount()));
-
-                                    collector.setSold(collector.getSold() + item.getAmount());
-                                    collector.setEarned(collector.getEarned() + (getCropPricing(item.getType()) * item.getAmount()));
-
-                                });
+                        sellAllItems(collector.getId());
 
                         collector.getItems().clear();
                     }else{

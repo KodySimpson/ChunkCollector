@@ -7,6 +7,7 @@ me\kodysimpson\chunkcollector\commands\SubCommand.class
 me\kodysimpson\chunkcollector\menusystem\PaginatedMenu.class
 me\kodysimpson\chunkcollector\utils\Collector.class
 me\kodysimpson\chunkcollector\menusystem\PlayerMenuUtility.class
+me\kodysimpson\chunkcollector\utils\Utils$1.class
 me\kodysimpson\chunkcollector\menusystem\menus\CollectorMenu.class
 me\kodysimpson\chunkcollector\menusystem\Menu.class
 me\kodysimpson\chunkcollector\utils\Database$CollectionType.class

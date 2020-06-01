@@ -6,6 +6,8 @@ import me.kodysimpson.chunkcollector.menusystem.menus.BuyMenu;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
+import java.util.List;
+
 public class BuyCommand extends SubCommand {
 
     @Override
@@ -32,6 +34,11 @@ public class BuyCommand extends SubCommand {
             player.sendMessage(ChatColor.GREEN + "You don't have permission to run this command.");
         }
 
+    }
+
+    @Override
+    public List<String> tabComplete(Player player, String[] args) {
+        return null;
     }
 
 }

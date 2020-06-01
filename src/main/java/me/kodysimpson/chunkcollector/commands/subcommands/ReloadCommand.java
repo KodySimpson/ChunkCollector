@@ -5,6 +5,8 @@ import me.kodysimpson.chunkcollector.commands.SubCommand;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
+import java.util.List;
+
 public class ReloadCommand extends SubCommand {
 
     @Override
@@ -26,14 +28,19 @@ public class ReloadCommand extends SubCommand {
     public void perform(Player player, String[] args) {
 
         if (player.hasPermission("chunkcollector.admin") || player.hasPermission("chunkcollector.reload")){
+
             ChunkCollector.getPlugin().reloadConfig();
 
             player.sendMessage(ChatColor.GREEN + "The config.yml has been reloaded.");
+
         }else{
             player.sendMessage(ChatColor.GREEN + "You don't have permission to run this command.");
         }
 
+    }
 
-
+    @Override
+    public List<String> tabComplete(Player player, String[] args) {
+        return null;
     }
 }

@@ -8,6 +8,9 @@ collector-cost:
   drop: 10000 #Drop collectors will cost 10,000
   crop: 2500 #crop collectors will cost 2,500
 
+##Set whether collectors can be destroyed by explosions or not
+bomb-proof: true #if true, explosions will not affect collectors
+
 #############################################
 ##Collector item Pricing
 

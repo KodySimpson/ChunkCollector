@@ -5,6 +5,8 @@ import me.kodysimpson.chunkcollector.commands.SubCommand;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
+import java.util.List;
+
 public class HelpCommand extends SubCommand {
 
     @Override
@@ -37,6 +39,11 @@ public class HelpCommand extends SubCommand {
         p.sendMessage(ChatColor.GREEN + "=====================================");
         p.sendMessage(" ");
 
+    }
+
+    @Override
+    public List<String> tabComplete(Player player, String[] args) {
+        return null;
     }
 
 }

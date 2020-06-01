@@ -151,6 +151,7 @@ public class CollectorUpgradeMenu extends Menu {
         capacityLore.add(ChatColor.WHITE + "------------------------");
         capacityLore.add(ChatColor.RED + "Current Capacity: " + ChatColor.GREEN + Utils.getCapacityAmount(collector.getStorageCapacity()));
         capacityLore.add(ChatColor.WHITE + "------------------------");
+
         if (Utils.getNextCapacity(collector.getStorageCapacity()).equalsIgnoreCase("AT MAX")){
             capacityLore.add(ChatColor.GOLD + "AT MAX LEVEL");
         }else{
@@ -161,13 +162,9 @@ public class CollectorUpgradeMenu extends Menu {
         capacityMeta.setLore(capacityLore);
         capacity.setItemMeta(capacityMeta);
 
-        ItemStack close = new ItemStack(Material.BARRIER, 1);
-        ItemMeta close_meta = close.getItemMeta();
-        close_meta.setDisplayName(ChatColor.DARK_RED + "Close");
-        close.setItemMeta(close_meta);
-
         inventory.setItem(22, capacity);
-        inventory.setItem(40, close);
+
+        inventory.setItem(40, makeItem(Material.BARRIER, ChatColor.DARK_RED + "Close"));
 
         setFillerGlass();
     }
