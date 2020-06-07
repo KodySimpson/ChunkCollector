@@ -51,6 +51,7 @@ public class CollectorMenu extends Menu {
     public void setMenuItems() {
 
         Collector collector = Database.findByID(playerMenuUtility.getCollectorID());
+
         if (collector.getType() == Database.CollectionType.DROP) {
 
             inventory.setItem(11, makeItem(Material.CHEST, ChatColor.RED + "" + ChatColor.BOLD + "View Drop Storage",
@@ -69,7 +70,7 @@ public class CollectorMenu extends Menu {
                     ChatColor.WHITE + "----------------------------",
                     ChatColor.GRAY + "Amount Stored: " + ChatColor.GREEN + collector.getItems().stream().mapToInt(ItemStack::getAmount).sum() + "/" + Utils.getCapacityAmount(collector.getStorageCapacity())));
 
-            inventory.setItem(13, makeItem(Material.BARRIER, ChatColor.YELLOW + "" + ChatColor.BOLD + "Food Collection",
+            inventory.setItem(13, makeItem(Material.BREAD, ChatColor.YELLOW + "" + ChatColor.BOLD + "Food Collection",
                     ChatColor.GREEN + "Automatically collects fully ",
                     ChatColor.GREEN + "grown food.",
                     ChatColor.WHITE + "----------------------------",

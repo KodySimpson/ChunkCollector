@@ -25,6 +25,12 @@ public abstract class PaginatedMenu extends Menu {
 
         inventory.setItem(50, makeItem(Material.DARK_OAK_BUTTON, ChatColor.GREEN + "Right"));
 
+        inventory.setItem(52, makeItem(Material.OAK_SIGN, ChatColor.GOLD + "" + ChatColor.BOLD + "Info",
+                ChatColor.GREEN + "Every item that the collector ",
+                ChatColor.GREEN + "has picked up is stored here.",
+                ChatColor.GREEN + "Once the storage capacity is ",
+                ChatColor.GREEN + "reached, all items are sold."));
+
         for (int i = 0; i < 10; i++) {
             if (inventory.getItem(i) == null) {
                 inventory.setItem(i, super.FILLER_GLASS);

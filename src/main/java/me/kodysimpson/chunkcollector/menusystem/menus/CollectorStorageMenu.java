@@ -47,12 +47,7 @@ public class CollectorStorageMenu extends PaginatedMenu {
 
         } else if (e.getCurrentItem().getType() == Material.FIREWORK_ROCKET) {
 
-            System.out.println("collector id: " + playerMenuUtility.getCollectorID());
-            System.out.println("ctotal items about to be sold: " + collector.getItems().stream().mapToInt(ItemStack::getAmount).sum());
-            System.out.println("ctotal items about to be sold: " + collector.getItems().stream().mapToInt(ItemStack::getAmount).sum());
-            System.out.println("ctotal items about to be sold: " + collector.getItems().stream().mapToInt(ItemStack::getAmount).sum());
-
-            Utils.sellAllItems(playerMenuUtility.getCollectorID());
+            Utils.sellAllItems(collector);
 
             //Reload the page
             super.open();
@@ -82,6 +77,7 @@ public class CollectorStorageMenu extends PaginatedMenu {
         addMenuBorder();
 
         Collector collector = Database.findByID(playerMenuUtility.getCollectorID());
+
         ArrayList<ItemStack> drops = Utils.combine(collector.getItems());
 
         if (drops != null && !drops.isEmpty()) {

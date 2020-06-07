@@ -11,10 +11,16 @@ collector-cost:
 ##Set whether collectors can be destroyed by explosions or not
 bomb-proof: true #if true, explosions will not affect collectors
 
+##Set the duration between collections. 1200 ticks = 1 minute
+# http://mapmaking.fr/tick/
+# NOTE: Restart required after changing this option
+collection-duration: 1200 #Collectors will pick up items/harvest crops every 1200 ticks
+
 #############################################
 ##Collector item Pricing
 
 #Prices for the Drop Collector seller
+#USE MATERIAL NAMES: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
 mob-drops:
   BLAZE_ROD: 1.15
   STRING: 0.45
@@ -41,6 +47,7 @@ mob-drops:
   GOLD_INGOT: 2.0
 
 #Prices for the Crop Collector seller
+#USE MATERIAL NAMES: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
 crop-pricing:
   WHEAT: 1.0 #each wheat will be sold for 1 currency
   WHEAT_SEEDS: 0.2
@@ -82,3 +89,20 @@ fortune-prices:
   3: 2000000.0
 
 ############################################
+
+###########################################
+##Menu Title Configuration
+Menu Titles:
+  Buy Menu: '&aPurchase Collector'
+  Confirm-Buy Menu:
+    drop: 'Buy Drop Collector?'
+    crop: 'Buy Crop Collector?'
+  Collector Menu:
+    drop: 'Mob Drop Collector'
+    crop: 'Crop Collector'
+  Collector-Storage Menu:
+    drop: 'Collected Mob Drops'
+    crop: 'Collected Crop Produce'
+  Collector-Upgrade Menu: 'Collector Upgrade Options'
+############################################
+

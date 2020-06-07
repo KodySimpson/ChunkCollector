@@ -1,5 +1,7 @@
 package me.kodysimpson.chunkcollector.menusystem.menus;
 
+import me.kodysimpson.chunkcollector.ChunkCollector;
+import me.kodysimpson.chunkcollector.config.Config;
 import me.kodysimpson.chunkcollector.menusystem.Menu;
 import me.kodysimpson.chunkcollector.menusystem.PlayerMenuUtility;
 import me.kodysimpson.chunkcollector.utils.Database;
@@ -15,7 +17,7 @@ public class BuyMenu extends Menu {
 
     @Override
     public String getMenuName() {
-        return "Purchase Collector";
+        return Config.BUY_MENU;
     }
 
     @Override

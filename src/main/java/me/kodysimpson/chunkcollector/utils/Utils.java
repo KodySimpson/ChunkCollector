@@ -1,5 +1,7 @@
 package me.kodysimpson.chunkcollector.utils;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import me.kodysimpson.chunkcollector.ChunkCollector;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -16,15 +18,42 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Utils {
+
+    public static ArrayList<ItemStack> combine( ArrayList<ItemStack> items ) {
+
+        Multimap<Material, Integer> map = ArrayListMultimap.create();
+        for (ItemStack item: items) {
+            if (!map.containsKey(item.getType())) {
+                map.put(item.getType(), item.getAmount());
+            }else{
+                ArrayList<Integer> value = new ArrayList<>(map.get(item.getType()));
+                if (value.get(value.size()-1)+item.getAmount()<=item.getType().getMaxStackSize()) {
+                    value.set(value.size()-1, value.get(value.size()-1)+item.getAmount());
+                }else{
+                    int k = value.get(value.size()-1);
+                    value.set(value.size()-1, item.getType().getMaxStackSize());
+                    value.add(item.getAmount()-(item.getType().getMaxStackSize()-k));
+                }
+                map.replaceValues(item.getType(),value);
+            }
+        }
+        ArrayList<ItemStack> sortedList = new ArrayList<>();
+
+        for (Material key: map.keySet()) {
+            Collection<Integer> values = map.get(key);
+            for (Integer value: values) {
+                ItemStack item = new ItemStack(key,value);
+                sortedList.add(item);
+            }
+        }
+
+        return sortedList;
+    }
+
 
     public static ItemStack makeCollector(Player p, Database.CollectionType type){
 
@@ -82,30 +111,6 @@ public class Utils {
         return mob_drops.contains(item.getItemStack().getType());
     }
 
-    public static ArrayList<ItemStack> combine( ArrayList< ItemStack > items ) {
-
-        Inventory test = Bukkit.createInventory(null, 54, "thing");
-        //Put all the items into a new inventory, which automatically compresseses the items
-        items.stream()
-                .forEach(itemStack -> {
-                    if (itemStack != null){
-                        test.addItem(itemStack);
-                    }
-                });
-
-        //Take the items from the compressed inventory and put into arraylist
-        ArrayList<ItemStack> compressed = new ArrayList<>();
-        Arrays.stream(test.getContents())
-                .forEach(itemStack -> {
-                    if (itemStack != null){
-                        compressed.add(itemStack);
-                    }
-                });
-
-        return compressed;
-
-    }
-
     public static double getItemPrice(Material item, Database.CollectionType type){
 
         switch (type){
@@ -120,14 +125,9 @@ public class Utils {
 
     /**
      * Used to sell all items in a given collector.
-     * @param collectorID collector to be accessed and emptied
+     * @param collector collector to be accessed and emptied
      */
-    public static void sellAllItems(int collectorID){
-
-        Collector collector = Database.findByID(collectorID);
-
-        System.out.println("collector id: " + collectorID);
-        System.out.println("wtftotal items about to be sold: " + collector.getItems().stream().mapToInt(ItemStack::getAmount).sum());
+    public static void sellAllItems(Collector collector){
 
         Player p = Bukkit.getPlayer(collector.getOwnerUUID());
 
@@ -135,7 +135,7 @@ public class Utils {
         TextComponent newLine = new TextComponent(ComponentSerializer.parse("{text: \"\n\"}"));
         receipt.append(newLine).reset();
 
-        ArrayList<ItemStack> storage = Utils.combine(collector.getItems());
+        ArrayList<ItemStack> storage = collector.getItems();
 
         if (collector.getItems().isEmpty()) {
             p.sendMessage(ChatColor.GRAY + "The collector is empty.");
@@ -213,7 +213,7 @@ public class Utils {
                     if ((collector.getItems().stream().mapToInt(ItemStack::getAmount).sum() + itemStack.getAmount()) > Utils.getCapacityAmount(collector.getStorageCapacity())){
                         collector.getItems().add(itemStack);
 
-                        sellAllItems(collector.getId());
+                        sellAllItems(collector);
 
                         collector.getItems().clear();
                     }else{

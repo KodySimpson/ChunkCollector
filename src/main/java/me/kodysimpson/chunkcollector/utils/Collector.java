@@ -5,6 +5,10 @@ import org.bukkit.inventory.ItemStack;
 import java.util.ArrayList;
 import java.util.UUID;
 
+
+/**
+ * Used to model Chunk Collectors to then do operations upon them and get information
+ */
 public class Collector {
 
     private int id;

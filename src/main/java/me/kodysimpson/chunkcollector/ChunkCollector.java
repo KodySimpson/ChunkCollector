@@ -1,6 +1,7 @@
 package me.kodysimpson.chunkcollector;
 
 import me.kodysimpson.chunkcollector.commands.CommandManager;
+import me.kodysimpson.chunkcollector.config.Reflection;
 import me.kodysimpson.chunkcollector.listeners.CollectorListener;
 import me.kodysimpson.chunkcollector.menusystem.PlayerMenuUtility;
 import me.kodysimpson.chunkcollector.tasks.CollectDrops;
@@ -8,6 +9,7 @@ import me.kodysimpson.chunkcollector.utils.Database;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -70,6 +72,8 @@ public final class ChunkCollector extends JavaPlugin {
         saveDefaultConfig();
         reloadConfig();
 
+        Reflection.doReflection(getClass(), (YamlConfiguration) getConfig());
+
         plugin = this;
 
         //Vault setup
@@ -89,8 +93,8 @@ public final class ChunkCollector extends JavaPlugin {
         //Listeners
         Bukkit.getServer().getPluginManager().registerEvents(new CollectorListener(), this);
 
-        //Collection task
-        BukkitTask task = new CollectDrops().runTaskTimer(this, 1200, 1200);
+        //Collection task[starts up 1 minute from startup]
+        BukkitTask task = new CollectDrops().runTaskTimer(this, 1200, getConfig().getLong("collection-duration"));
 
     }
 

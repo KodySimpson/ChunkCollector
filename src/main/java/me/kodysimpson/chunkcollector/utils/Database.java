@@ -1,18 +1,12 @@
 package me.kodysimpson.chunkcollector.utils;
 
 import me.kodysimpson.chunkcollector.ChunkCollector;
-import org.bukkit.Bukkit;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.IOException;
 import java.sql.*;
 import java.util.UUID;
 
 public class Database {
-
-    public enum CollectionType {
-        DROP, CROP
-    }
 
     //Create and establish connection with SQL Database
     public static Connection getConnection() {
@@ -150,6 +144,10 @@ public class Database {
             System.out.println("Error deleting collector from the DB");
         }
 
+    }
+
+    public enum CollectionType {
+        DROP, CROP
     }
 
 }
