@@ -1,5 +1,6 @@
 package me.kodysimpson.chunkcollector.listeners;
 
+import com.sun.rowset.CachedRowSetImpl;
 import me.kodysimpson.chunkcollector.ChunkCollector;
 import me.kodysimpson.chunkcollector.menusystem.Menu;
 import me.kodysimpson.chunkcollector.menusystem.PlayerMenuUtility;
@@ -26,10 +27,15 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class CollectorListener implements Listener {
@@ -74,7 +80,26 @@ public class CollectorListener implements Listener {
     }
 
     @EventHandler
-    public void onCollectorBreak(BlockDropItemEvent e) {
+    public void onCollectorBreak(BlockBreakEvent e){
+        if (e.getBlock().getState() instanceof TileState) {
+            TileState tileState = (TileState) e.getBlock().getState();
+
+            if (tileState.getPersistentDataContainer().has(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER)) {
+
+                Collector collector = Database.findByID(tileState.getPersistentDataContainer().get(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER));
+
+                if (!collector.getOwnerUUID().equals(e.getPlayer().getUniqueId())) {
+                    e.setCancelled(true);
+                    e.getPlayer().sendMessage(ChatColor.GRAY + "You don't own this collector.");
+                }
+
+            }
+
+        }
+    }
+
+    @EventHandler
+    public void onCollectorBreakDrop(BlockDropItemEvent e) {
 
         if (e.getBlockState() instanceof TileState) {
             TileState tileState = (TileState) e.getBlockState();
@@ -98,11 +123,19 @@ public class CollectorListener implements Listener {
                                     itemMeta.getPersistentDataContainer().set(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER, tileState.getPersistentDataContainer().get(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER));
 
                                     item.getItemStack().setItemMeta(itemMeta);
+
+                                    //Cancel the event so the item doesnt drop
+                                    e.setCancelled(true);
+
+                                    if (e.getPlayer().getInventory().firstEmpty() == -1){
+                                        e.getPlayer().sendMessage(ChatColor.RED + "Your inventory is full, the Collector was dropped at your feet.");
+                                        e.getPlayer().getWorld().dropItem(e.getPlayer().getLocation(), item.getItemStack());
+                                    }else{
+                                        e.getPlayer().sendMessage(ChatColor.GREEN + "Collector broken and placed into inventory.");
+                                        e.getPlayer().getInventory().addItem(item.getItemStack());
+                                    }
                                 });
                     }
-                } else {
-                    e.setCancelled(true);
-                    e.getPlayer().sendMessage(ChatColor.GRAY + "You don't own this collector.");
                 }
 
             }
@@ -239,6 +272,44 @@ public class CollectorListener implements Listener {
             }
 
         }
+
+    }
+
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent e){
+
+        Player p = e.getPlayer();
+
+        new BukkitRunnable(){
+            @Override
+            public void run() {
+                double totalEarned = 0.0;
+                long totalSold = 0;
+
+                ResultSet result = Database.findAllByUUID(p);
+                try{
+                    while(result.next()){
+                        totalEarned += result.getDouble("TotalEarned");
+                        totalSold += result.getLong("TotalSold");
+                    }
+
+                    if (totalSold > 0){
+                        p.sendMessage(" ");
+                        p.sendMessage(ChatColor.LIGHT_PURPLE + "Your Collectors earned you money while you were gone.");
+                        p.sendMessage(ChatColor.GRAY + "Total Earned: " + ChatColor.GREEN + "$" + totalEarned);
+                        p.sendMessage(ChatColor.GRAY + "Total Items Sold: " + ChatColor.AQUA + totalSold);
+                        p.sendMessage(" ");
+
+                        Database.deleteAllByUUID(p);
+                    }
+
+                    result.close();
+
+                }catch (SQLException ex){
+                    System.out.println(ex);
+                }
+            }
+        }.runTaskLater(ChunkCollector.getPlugin(), 90L);
 
     }
 

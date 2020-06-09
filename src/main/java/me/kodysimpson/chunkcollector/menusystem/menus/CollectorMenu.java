@@ -1,5 +1,6 @@
 package me.kodysimpson.chunkcollector.menusystem.menus;
 
+import me.kodysimpson.chunkcollector.ChunkCollector;
 import me.kodysimpson.chunkcollector.menusystem.Menu;
 import me.kodysimpson.chunkcollector.menusystem.PlayerMenuUtility;
 import me.kodysimpson.chunkcollector.utils.Collector;
@@ -19,9 +20,9 @@ public class CollectorMenu extends Menu {
     @Override
     public String getMenuName() {
         if (playerMenuUtility.getType() == Database.CollectionType.DROP) {
-            return "Mob Drop Collector";
+            return ChatColor.translateAlternateColorCodes('&', ChunkCollector.getPlugin().getConfig().getString("Menu Titles.Collector Menu.drop"));
         } else {
-            return "Crop Collector";
+            return ChatColor.translateAlternateColorCodes('&', ChunkCollector.getPlugin().getConfig().getString("Menu Titles.Collector Menu.crop"));
         }
     }
 

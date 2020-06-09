@@ -17,7 +17,7 @@ public class BuyMenu extends Menu {
 
     @Override
     public String getMenuName() {
-        return Config.BUY_MENU;
+        return ChatColor.translateAlternateColorCodes('&', ChunkCollector.getPlugin().getConfig().getString("Menu Titles.Buy Menu"));
     }
 
     @Override

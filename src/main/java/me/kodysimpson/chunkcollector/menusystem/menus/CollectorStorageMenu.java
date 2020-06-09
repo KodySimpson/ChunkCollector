@@ -1,5 +1,7 @@
 package me.kodysimpson.chunkcollector.menusystem.menus;
 
+import me.kodysimpson.chunkcollector.ChunkCollector;
+import me.kodysimpson.chunkcollector.config.Config;
 import me.kodysimpson.chunkcollector.menusystem.PaginatedMenu;
 import me.kodysimpson.chunkcollector.menusystem.PlayerMenuUtility;
 import me.kodysimpson.chunkcollector.utils.Collector;
@@ -22,9 +24,9 @@ public class CollectorStorageMenu extends PaginatedMenu {
     @Override
     public String getMenuName() {
         if (playerMenuUtility.getType() == Database.CollectionType.DROP) {
-            return "Collected Mob Drops";
+            return ChatColor.translateAlternateColorCodes('&', ChunkCollector.getPlugin().getConfig().getString("Menu Titles.Collector-Storage Menu.drop"));
         } else {
-            return "Collected Crop Produce";
+            return ChatColor.translateAlternateColorCodes('&', ChunkCollector.getPlugin().getConfig().getString("Menu Titles.Collector-Storage Menu.crop"));
         }
     }
 
@@ -55,7 +57,7 @@ public class CollectorStorageMenu extends PaginatedMenu {
         } else if (e.getCurrentItem().getType() == Material.DARK_OAK_BUTTON) {
             if (ChatColor.stripColor(e.getCurrentItem().getItemMeta().getDisplayName()).equalsIgnoreCase("Left")) {
                 if (page == 0) {
-                    p.sendMessage(ChatColor.GRAY + "You are on the first page.");
+                    p.sendMessage(Config.FIRST_PAGE);
                 } else {
                     page = page - 1;
                     super.open();
@@ -65,7 +67,7 @@ public class CollectorStorageMenu extends PaginatedMenu {
                     page = page + 1;
                     super.open();
                 } else {
-                    p.sendMessage(ChatColor.GRAY + "You are on the last page.");
+                    p.sendMessage(Config.LAST_PAGE);
                 }
             }
         }

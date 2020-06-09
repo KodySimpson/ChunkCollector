@@ -1,6 +1,9 @@
 package me.kodysimpson.chunkcollector.utils;
 
+import com.sun.rowset.CachedRowSetImpl;
 import me.kodysimpson.chunkcollector.ChunkCollector;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 
 import java.io.IOException;
 import java.sql.*;
@@ -35,6 +38,7 @@ public class Database {
             Statement statement = getConnection().createStatement();
             //Table for storing all of the locks
             statement.execute("CREATE TABLE IF NOT EXISTS Collectors(CollectorID int NOT NULL IDENTITY(1, 1), Type varchar(255), OwnerUUID varchar(255), Items clob, Sold long, Earned double, Capacity int, Fortune int);");
+            statement.execute("CREATE TABLE IF NOT EXISTS OfflineProfits(ID int NOT NULL IDENTITY(1, 1), UUID varchar(255), TotalEarned double, TotalSold long)");
 
             System.out.println("Database loaded");
 
@@ -78,6 +82,57 @@ public class Database {
         }
 
         return 0;
+    }
+
+    public static void insertOfflineProfit(OfflinePlayer p, double totalEarned, long totalSold){
+
+        try {
+            PreparedStatement statement = getConnection()
+                    .prepareStatement("INSERT INTO OfflineProfits(UUID, TotalEarned, TotalSold) VALUES (?, ?, ?)");
+            statement.setString(1, p.getUniqueId().toString());
+            statement.setDouble(2, totalEarned);
+            statement.setLong(3, totalSold);
+
+            statement.execute();
+
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
+    }
+
+    public static ResultSet findAllByUUID(Player p){
+        PreparedStatement preparedStatement = null;
+
+        try{
+            preparedStatement = getConnection().prepareStatement("SELECT * FROM OfflineProfits WHERE UUID = ?");
+            preparedStatement.setString(1, p.getUniqueId().toString());
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            return resultSet;
+
+        }catch (SQLException ex){
+            System.out.println(ex);
+        }
+
+        return null;
+    }
+
+    public static void deleteAllByUUID(Player p){
+        PreparedStatement statement;
+
+        try {
+
+            statement = getConnection()
+                    .prepareStatement("DELETE FROM OfflineProfits WHERE UUID = ?");
+            statement.setString(1, p.getUniqueId().toString());
+
+            statement.executeUpdate();
+
+        } catch (SQLException ex) {
+            System.out.println("Error deleting earnings entries for " + p.getUniqueId().toString());
+        }
     }
 
     public static Collector findByID(int id) {

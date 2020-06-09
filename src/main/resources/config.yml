@@ -93,7 +93,7 @@ fortune-prices:
 ###########################################
 ##Menu Title Configuration
 Menu Titles:
-  Buy Menu: '&aPurchase Collector'
+  Buy Menu: 'Purchase Collector'
   Confirm-Buy Menu:
     drop: 'Buy Drop Collector?'
     crop: 'Buy Crop Collector?'
@@ -106,3 +106,56 @@ Menu Titles:
   Collector-Upgrade Menu: 'Collector Upgrade Options'
 ############################################
 
+###########################################
+##Collector Item Configuration
+Names:
+  drop: '&dMob Collector'
+  crop: '&eCrop Collector'
+
+#Use these material names: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
+#Ensure that you choose a placeable block
+Materials:
+  drop: 'HOPPER'
+  crop: 'HOPPER'
+############################################
+
+###########################################
+##Message Configuration - Edit messages sent to the player
+Messages:
+  no-permission: '&4You don"t have permission to run this command.'
+  got-collector:
+    drop: '&aDrop Collector obtained.'
+    crop: '&aCrop Collector obtained.'
+  given-collector:
+    drop: '&aYou have been given a Drop Collector.'
+    crop: '&aYou have been given a Crop Collector.'
+  reloaded: '&aThe config.yml has been reloaded.'
+  upgrade-complete:
+    storage: '&eCollector Storage Capacity has been upgraded.'
+    fortune: '&eCollector Fortune Level has been upgraded.'
+  max-storage: '&7Your collector is at max storage capacity.'
+  max-fortune: '&7Your collector is at max fortune.'
+  cant-afford-upgrade: '&4You cannot afford this upgrade.'
+  first-page: '&7You are on the first page.'
+  last-page: '&7You are on the last page.'
+#############################################
+
+############################################
+##Command Configuration - Edit All Commands
+Commands:
+  Buy:
+    name: 'buy'
+    description: 'Buy a chunk collector'
+    syntax: '/collector buy'
+  Give:
+    name: 'give'
+    description: 'Give yourself or another player a chunk collector'
+    syntax: '/collector give <type> [player]'
+  Help:
+    name: 'help'
+    description: 'See commands and info'
+    syntax: '/collector help'
+  Reload:
+    name: 'reload'
+    description: 'Reload the configuration file'
+    syntax: '/collector reload'

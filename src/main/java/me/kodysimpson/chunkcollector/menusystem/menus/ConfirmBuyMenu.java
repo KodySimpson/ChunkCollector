@@ -21,9 +21,9 @@ public class ConfirmBuyMenu extends Menu {
     @Override
     public String getMenuName() {
         if (playerMenuUtility.getBuyType() == Database.CollectionType.DROP){
-            return "Buy Drop Collector?";
+            return ChatColor.translateAlternateColorCodes('&', ChunkCollector.getPlugin().getConfig().getString("Menu Titles.Confirm-Buy Menu.drop"));
         }else{
-            return "Buy Crop Collector?";
+            return ChatColor.translateAlternateColorCodes('&', ChunkCollector.getPlugin().getConfig().getString("Menu Titles.Confirm-Buy Menu.crop"));
         }
     }
 

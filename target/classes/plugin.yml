@@ -1,9 +1,9 @@
 name: ChunkCollector
-version: 1.0.3
+version: 1.0.6
 website: ggservers.com
 author: Illuminatiiiiii
 main: me.kodysimpson.chunkcollector.ChunkCollector
-api-version: 1.15
+api-version: 1.13
 softdepend:
   - vault
 commands:

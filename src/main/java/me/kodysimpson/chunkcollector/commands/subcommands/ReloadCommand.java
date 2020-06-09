@@ -2,6 +2,7 @@ package me.kodysimpson.chunkcollector.commands.subcommands;
 
 import me.kodysimpson.chunkcollector.ChunkCollector;
 import me.kodysimpson.chunkcollector.commands.SubCommand;
+import me.kodysimpson.chunkcollector.config.Config;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
@@ -11,17 +12,17 @@ public class ReloadCommand extends SubCommand {
 
     @Override
     public String getName() {
-        return "reload";
+        return ChatColor.translateAlternateColorCodes('&', ChunkCollector.getPlugin().getConfig().getString("Commands.Reload.name"));
     }
 
     @Override
     public String getDescription() {
-        return "Reload the configuration file";
+        return ChatColor.translateAlternateColorCodes('&', ChunkCollector.getPlugin().getConfig().getString("Commands.Reload.description"));
     }
 
     @Override
     public String getSyntax() {
-        return "/collector reload";
+        return ChatColor.translateAlternateColorCodes('&', ChunkCollector.getPlugin().getConfig().getString("Commands.Reload.syntax"));
     }
 
     @Override
@@ -31,10 +32,10 @@ public class ReloadCommand extends SubCommand {
 
             ChunkCollector.getPlugin().reloadConfig();
 
-            player.sendMessage(ChatColor.GREEN + "The config.yml has been reloaded.");
+            player.sendMessage(Config.RELOADED);
 
         }else{
-            player.sendMessage(ChatColor.GREEN + "You don't have permission to run this command.");
+            player.sendMessage(Config.NO_PERMISSION);
         }
 
     }

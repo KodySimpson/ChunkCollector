@@ -1,6 +1,8 @@
 package me.kodysimpson.chunkcollector.commands.subcommands;
 
+import me.kodysimpson.chunkcollector.ChunkCollector;
 import me.kodysimpson.chunkcollector.commands.SubCommand;
+import me.kodysimpson.chunkcollector.config.Config;
 import me.kodysimpson.chunkcollector.utils.Database;
 import me.kodysimpson.chunkcollector.utils.Utils;
 import org.bukkit.*;
@@ -15,17 +17,17 @@ public class GiveCommand extends SubCommand {
 
     @Override
     public String getName() {
-        return "give";
+        return ChatColor.translateAlternateColorCodes('&', ChunkCollector.getPlugin().getConfig().getString("Commands.Give.name"));
     }
 
     @Override
     public String getDescription() {
-        return "Give yourself or another player a chunk collector.";
+        return ChatColor.translateAlternateColorCodes('&', ChunkCollector.getPlugin().getConfig().getString("Commands.Give.description"));
     }
 
     @Override
     public String getSyntax() {
-        return "/collector give <type> [player]";
+        return ChatColor.translateAlternateColorCodes('&', ChunkCollector.getPlugin().getConfig().getString("Commands.Give.syntax"));
     }
 
     @Override
@@ -39,7 +41,7 @@ public class GiveCommand extends SubCommand {
                     ItemStack collector = Utils.makeCollector(p, Database.CollectionType.DROP);
                     if (collector != null){
                         p.getInventory().addItem(collector);
-                        p.sendMessage(ChatColor.GREEN + "Drop Collector obtained.");
+                        p.sendMessage(Config.GOT_COLLECTOR_DROP);
                     }
 
                 }else if(args[1].equalsIgnoreCase("crop")){
@@ -47,7 +49,7 @@ public class GiveCommand extends SubCommand {
                     ItemStack collector = Utils.makeCollector(p, Database.CollectionType.CROP);
                     if (collector != null){
                         p.getInventory().addItem(collector);
-                        p.sendMessage(ChatColor.GREEN + "Crop Collector obtained.");
+                        p.sendMessage(Config.GOT_COLLECTOR_CROP);
                     }
 
                 }else{
@@ -71,7 +73,7 @@ public class GiveCommand extends SubCommand {
                         ItemStack collector = Utils.makeCollector(p, Database.CollectionType.DROP);
                         if (collector != null){
                             target.getInventory().addItem(collector);
-                            target.sendMessage(ChatColor.GREEN + "You have been give a Drop Collector.");
+                            target.sendMessage(Config.GIVEN_COLLECTOR_DROP);
 
                             p.sendMessage(ChatColor.GREEN + "Collector given to " + target.getDisplayName());
                         }
@@ -81,7 +83,7 @@ public class GiveCommand extends SubCommand {
                         ItemStack collector = Utils.makeCollector(p, Database.CollectionType.CROP);
                         if (collector != null){
                             target.getInventory().addItem(collector);
-                            target.sendMessage(ChatColor.GREEN + "You have been give a Crop Collector.");
+                            target.sendMessage(Config.GIVEN_COLLECTOR_CROP);
 
                             p.sendMessage(ChatColor.GREEN + "Collector given to " + target.getDisplayName());
                         }
@@ -100,7 +102,7 @@ public class GiveCommand extends SubCommand {
                 p.sendMessage(ChatColor.GRAY + "Example: /collector give drop");
             }
         }else{
-            p.sendMessage(ChatColor.GREEN + "You don't have permission to run this command.");
+            p.sendMessage(Config.NO_PERMISSION);
         }
 
 

@@ -1,6 +1,7 @@
 package me.kodysimpson.chunkcollector.menusystem.menus;
 
 import me.kodysimpson.chunkcollector.ChunkCollector;
+import me.kodysimpson.chunkcollector.config.Config;
 import me.kodysimpson.chunkcollector.menusystem.Menu;
 import me.kodysimpson.chunkcollector.menusystem.PlayerMenuUtility;
 import me.kodysimpson.chunkcollector.utils.Collector;
@@ -24,7 +25,7 @@ public class CollectorUpgradeMenu extends Menu {
 
     @Override
     public String getMenuName() {
-        return "Collector Upgrade Options";
+        return ChatColor.translateAlternateColorCodes('&', ChunkCollector.getPlugin().getConfig().getString("Menu Titles.Collector-Upgrade Menu"));
     }
 
     @Override
@@ -44,7 +45,7 @@ public class CollectorUpgradeMenu extends Menu {
 
                 //See if they are at the max tier or not
                 if (Utils.getNextCapacity(collector.getStorageCapacity()).equalsIgnoreCase("AT MAX")){
-                    p.sendMessage(ChatColor.GRAY + "Your collector is at max storage capacity.");
+                    p.sendMessage(Config.MAX_STORAGE);
                 }else{
                     //check to see if they can afford the next tier
                     if (ChunkCollector.getEconomy().getBalance(p) >= Utils.getCapacityUpgradePrice(collector.getStorageCapacity())) {
@@ -57,7 +58,7 @@ public class CollectorUpgradeMenu extends Menu {
                             System.out.println(response.errorMessage);
                         } else {
 
-                            p.sendMessage(ChatColor.YELLOW + "Collector Storage Capacity has been upgraded.");
+                            p.sendMessage(Config.UPGRADE_STORAGE);
                             p.sendMessage(ChatColor.GREEN + "$" + Utils.getCapacityUpgradePrice(collector.getStorageCapacity()) + ChatColor.YELLOW + " has been deducted from your balance.");
 
                             //they have enough, do the upgrade.
@@ -69,7 +70,7 @@ public class CollectorUpgradeMenu extends Menu {
                         }
 
                     } else {
-                        p.sendMessage(ChatColor.RED + "You cannot afford this upgrade.");
+                        p.sendMessage(Config.CANT_AFFORD_UPGRADE);
                     }
                 }
 
@@ -78,7 +79,7 @@ public class CollectorUpgradeMenu extends Menu {
 
                 //see if they are already at max tier
                 if (collector.getFortuneLevel() == 3) {
-                    p.sendMessage(ChatColor.GRAY + "Your collector is at max fortune.");
+                    p.sendMessage(Config.MAX_FORTUNE);
                 } else {
                     if (ChunkCollector.getEconomy().getBalance(p) >= Utils.getFortuneUpgradePrice(collector.getFortuneLevel())) {
 
@@ -89,7 +90,7 @@ public class CollectorUpgradeMenu extends Menu {
                             System.out.println(response.errorMessage);
                         } else {
 
-                            p.sendMessage(ChatColor.YELLOW + "Collector Fortune Level has been upgraded.");
+                            p.sendMessage(Config.UPGRADE_FORTUNE);
                             p.sendMessage(ChatColor.GREEN + "$" + Utils.getFortuneUpgradePrice(collector.getFortuneLevel()) + ChatColor.YELLOW + " has been deducted from your balance.");
 
                             //do the upgrade
@@ -101,7 +102,7 @@ public class CollectorUpgradeMenu extends Menu {
                         }
 
                     } else {
-                        p.sendMessage(ChatColor.RED + "You cannot afford this upgrade.");
+                        p.sendMessage(Config.CANT_AFFORD_UPGRADE);
                     }
                 }
 

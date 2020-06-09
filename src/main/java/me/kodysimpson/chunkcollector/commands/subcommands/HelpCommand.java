@@ -1,5 +1,6 @@
 package me.kodysimpson.chunkcollector.commands.subcommands;
 
+import me.kodysimpson.chunkcollector.ChunkCollector;
 import me.kodysimpson.chunkcollector.commands.CommandManager;
 import me.kodysimpson.chunkcollector.commands.SubCommand;
 import org.bukkit.ChatColor;
@@ -11,17 +12,17 @@ public class HelpCommand extends SubCommand {
 
     @Override
     public String getName() {
-        return "help";
+        return ChatColor.translateAlternateColorCodes('&', ChunkCollector.getPlugin().getConfig().getString("Commands.Help.name"));
     }
 
     @Override
     public String getDescription() {
-        return "See commands and info";
+        return ChatColor.translateAlternateColorCodes('&', ChunkCollector.getPlugin().getConfig().getString("Commands.Help.description"));
     }
 
     @Override
     public String getSyntax() {
-        return "/collector help";
+        return ChatColor.translateAlternateColorCodes('&', ChunkCollector.getPlugin().getConfig().getString("Commands.Help.syntax"));
     }
 
     @Override

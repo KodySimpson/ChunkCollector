@@ -3,7 +3,7 @@ version: ${project.version}
 website: ggservers.com
 author: Illuminatiiiiii
 main: me.kodysimpson.chunkcollector.ChunkCollector
-api-version: 1.15
+api-version: 1.13
 softdepend:
   - vault
 commands:

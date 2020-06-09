@@ -3,6 +3,7 @@ package me.kodysimpson.chunkcollector.utils;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import me.kodysimpson.chunkcollector.ChunkCollector;
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -59,16 +60,24 @@ public class Utils {
 
         int id = 0;
 
-        ItemStack collector = new ItemStack(Material.HOPPER, 1);
-        ItemMeta collectorMeta = collector.getItemMeta();
+        ItemStack collector = null;
+        ItemMeta collectorMeta = null;
 
         if (type == Database.CollectionType.DROP){
-            collectorMeta.setDisplayName(ChatColor.LIGHT_PURPLE + "Mob Collector");
+
+            collector = new ItemStack(Material.valueOf(ChunkCollector.getPlugin().getConfig().getString("Materials.drop")), 1);
+            collectorMeta = collector.getItemMeta();
+
+            collectorMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', ChunkCollector.getPlugin().getConfig().getString("Names.drop")));
 
             //Create collector and give it to the player if created succesfully
             id = Database.createCollector(p.getUniqueId(), Database.CollectionType.DROP);
         }else{
-            collectorMeta.setDisplayName(ChatColor.YELLOW + "Crop Collector");
+
+            collector = new ItemStack(Material.valueOf(ChunkCollector.getPlugin().getConfig().getString("Materials.crop")), 1);
+            collectorMeta = collector.getItemMeta();
+
+            collectorMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', ChunkCollector.getPlugin().getConfig().getString("Names.crop")));
 
             //Create collector and give it to the player if created succesfully
             id = Database.createCollector(p.getUniqueId(), Database.CollectionType.CROP);
@@ -123,70 +132,100 @@ public class Utils {
         return 0.0;
     }
 
+    public static BaseComponent[] constructReceipt(ArrayList<String> lines){
+        TextComponent newLine = new TextComponent(ComponentSerializer.parse("{text: \"\n\"}"));
+
+        //Used to make our array of base components
+        ComponentBuilder receipt = new ComponentBuilder(net.md_5.bungee.api.ChatColor.GREEN + "" + net.md_5.bungee.api.ChatColor.BOLD + "Receipt of Items Sold");
+        receipt.append(newLine);
+
+        receipt.append(net.md_5.bungee.api.ChatColor.GREEN + "---------------------------");
+        receipt.append(newLine);
+
+        //take each string provided and convert it to a Text Component, then add to builder
+        for (String line : lines) {
+            receipt.append(new TextComponent(line)).reset();
+            receipt.append(newLine);
+        }
+
+        receipt.append(net.md_5.bungee.api.ChatColor.GREEN + "---------------------------");
+
+        //convert the componentbuilder into an array of base components
+        return receipt.create();
+    }
+
     /**
      * Used to sell all items in a given collector.
      * @param collector collector to be accessed and emptied
      */
     public static void sellAllItems(Collector collector){
 
-        Player p = Bukkit.getPlayer(collector.getOwnerUUID());
-
-        ComponentBuilder receipt = new ComponentBuilder(net.md_5.bungee.api.ChatColor.GREEN + "" + net.md_5.bungee.api.ChatColor.BOLD + "Receipt of Items Sold");
-        TextComponent newLine = new TextComponent(ComponentSerializer.parse("{text: \"\n\"}"));
-        receipt.append(newLine).reset();
+        OfflinePlayer player = Bukkit.getOfflinePlayer(collector.getOwnerUUID());
 
         ArrayList<ItemStack> storage = collector.getItems();
 
         if (collector.getItems().isEmpty()) {
-            p.sendMessage(ChatColor.GRAY + "The collector is empty.");
+            if(player.isOnline()){
+                player.getPlayer().sendMessage(ChatColor.GRAY + "The collector is empty.");
+            }
         } else {
 
             long itemsSold = 0;
             double earned = 0.0;
 
+            //Get the price and amount for each item and store it in the above variables
             for (ItemStack itemStack : storage) {
                 itemsSold = itemsSold + itemStack.getAmount();
                 earned = earned + (Utils.getItemPrice(itemStack.getType(), collector.getType()) * itemStack.getAmount());
             }
 
-            //Count each material type sold for the receipt
-            HashMap<Material, Long> countedItems = new HashMap<>();
-            storage.stream()
-                    .forEach(item -> {
-                        if (!countedItems.containsKey(item.getType())){
-                            countedItems.put(item.getType(), (long) item.getAmount());
-                        }else{
-                            countedItems.replace(item.getType(), countedItems.get(item.getType()) + item.getAmount());
-                        }
-                    });
-            //Add the counted materials to the receipt
-            countedItems.forEach(((material, aLong) -> {
-                receipt.append(new TextComponent(net.md_5.bungee.api.ChatColor.GRAY + "Sold " + aLong.toString() + " " + material.toString().toLowerCase().replace("_", " ") + " for $" + net.md_5.bungee.api.ChatColor.YELLOW + String.format("%.2f", (Utils.getItemPrice(material, collector.getType()) * aLong)))).reset();
-                receipt.append(newLine);
-            }));
-
-            receipt.append(net.md_5.bungee.api.ChatColor.GREEN + "---------------------------");
-
-            TextComponent text = new TextComponent(net.md_5.bungee.api.ChatColor.BLUE + "" + net.md_5.bungee.api.ChatColor.BOLD + "Hover for Receipt");
-            text.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, receipt.create()));
-
-            EconomyResponse transaction = ChunkCollector.getEconomy().depositPlayer(p, earned);
+            EconomyResponse transaction = ChunkCollector.getEconomy().depositPlayer(player, earned);
 
             if (transaction.transactionSuccess()) {
-                collector.setSold(itemsSold);
-                collector.setEarned(earned);
+                //Send the player the receipt and information if they are online
+                if (player.isOnline()){
 
-                p.sendMessage(" ");
-                if (collector.getType() == Database.CollectionType.DROP){
-                    p.sendMessage(ChatColor.GREEN + "All items in your " + ChatColor.LIGHT_PURPLE + "" + ChatColor.BOLD + "Drop Collector" + ChatColor.GREEN + " have been sold.");
+                    Player p = player.getPlayer();
+                    ArrayList<String> receiptItems = new ArrayList<>();
+
+                    //Compress and count each material type sold for the receipt
+                    HashMap<Material, Long> countedItems = new HashMap<>();
+                    storage.stream()
+                            .forEach(item -> {
+                                if (!countedItems.containsKey(item.getType())){
+                                    countedItems.put(item.getType(), (long) item.getAmount());
+                                }else{
+                                    countedItems.replace(item.getType(), countedItems.get(item.getType()) + item.getAmount());
+                                }
+                            });
+                    //Add the counted materials to the receipt
+                    countedItems.forEach(((material, aLong) -> {
+                        receiptItems.add(net.md_5.bungee.api.ChatColor.GRAY + "Sold " + aLong.toString() + " " + material.toString().toLowerCase().replace("_", " ") + " for $" + net.md_5.bungee.api.ChatColor.YELLOW + String.format("%.2f", (Utils.getItemPrice(material, collector.getType()) * aLong)));
+                    }));
+
+                    //Receipt message to be sent to the user
+                    TextComponent text = new TextComponent(net.md_5.bungee.api.ChatColor.BLUE + "" + net.md_5.bungee.api.ChatColor.BOLD + "Hover for Receipt");
+                    text.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, constructReceipt(receiptItems)));
+
+                    p.sendMessage(" ");
+                    if (collector.getType() == Database.CollectionType.DROP){
+                        p.sendMessage(ChatColor.GREEN + "All items in your " + ChatColor.LIGHT_PURPLE + "" + ChatColor.BOLD + "Drop Collector" + ChatColor.GREEN + " have been sold.");
+                    }else{
+                        p.sendMessage(ChatColor.GREEN + "All items in your " + ChatColor.YELLOW + "" + ChatColor.BOLD + "Crop Collector" + ChatColor.GREEN + " have been sold.");
+                    }
+                    p.sendMessage(ChatColor.GRAY + "Total Earned: " + ChatColor.GREEN + "$" + String.format("%.2f", earned));
+                    p.sendMessage(ChatColor.GRAY + "Total Sold: " + ChatColor.GREEN + itemsSold);
+                    p.sendMessage(" ");
+
+                    p.spigot().sendMessage(text);
                 }else{
-                    p.sendMessage(ChatColor.GREEN + "All items in your " + ChatColor.YELLOW + "" + ChatColor.BOLD + "Crop Collector" + ChatColor.GREEN + " have been sold.");
+                    //If they are not online, add the sell data to be gotten on next join
+                    Database.insertOfflineProfit(player, earned, itemsSold);
                 }
-                p.sendMessage(ChatColor.GRAY + "Total Earned: " + ChatColor.GREEN + "$" + String.format("%.2f", earned));
-                p.sendMessage(ChatColor.GRAY + "Total Sold: " + ChatColor.GREEN + itemsSold);
-                p.sendMessage(" ");
 
-                p.spigot().sendMessage(text);
+                //Set earnings
+                collector.setSold(collector.getSold() + itemsSold);
+                collector.setEarned(collector.getEarned() + earned);
 
                 //Update the collector to reflect the earnings
                 collector.getItems().clear();
@@ -269,5 +308,7 @@ public class Utils {
         }
         return 0.0;
     }
+
+
 
 }
