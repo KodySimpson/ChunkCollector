@@ -1,12 +1,13 @@
 package me.kodysimpson.chunkcollector.menusystem.menus;
 
 import me.kodysimpson.chunkcollector.ChunkCollector;
-import me.kodysimpson.chunkcollector.config.Config;
-import me.kodysimpson.chunkcollector.menusystem.Menu;
-import me.kodysimpson.chunkcollector.menusystem.PlayerMenuUtility;
-import me.kodysimpson.chunkcollector.utils.Collector;
-import me.kodysimpson.chunkcollector.utils.Database;
+import me.kodysimpson.chunkcollector.database.Database;
+import me.kodysimpson.chunkcollector.model.Collector;
+import me.kodysimpson.chunkcollector.utils.CollectionType;
 import me.kodysimpson.chunkcollector.utils.Utils;
+import me.kodysimpson.simpapi.colors.ColorTranslator;
+import me.kodysimpson.simpapi.menu.Menu;
+import me.kodysimpson.simpapi.menu.PlayerMenuUtility;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -19,13 +20,17 @@ import java.util.ArrayList;
 
 public class CollectorUpgradeMenu extends Menu {
 
+    private final Collector collector;
+
     public CollectorUpgradeMenu(PlayerMenuUtility playerMenuUtility) {
         super(playerMenuUtility);
+
+        collector = Database.getCollectorDataAccess().findById(playerMenuUtility.getData(MenuData.COLLECTOR_ID, Integer.class));
     }
 
     @Override
     public String getMenuName() {
-        return ChatColor.translateAlternateColorCodes('&', ChunkCollector.getPlugin().getConfig().getString("Menu Titles.Collector-Upgrade Menu"));
+        return ColorTranslator.translateColorCodes(ChunkCollector.getPlugin().getConfig().getString("Menu Titles.Collector-Upgrade Menu"));
     }
 
     @Override
@@ -34,18 +39,21 @@ public class CollectorUpgradeMenu extends Menu {
     }
 
     @Override
+    public boolean cancelAllClicks() {
+        return true;
+    }
+
+    @Override
     public void handleMenu(InventoryClickEvent e) {
 
         Player p = (Player) e.getWhoClicked();
 
-        Collector collector = Database.findByID(playerMenuUtility.getCollectorID());
-
-        switch (e.getCurrentItem().getType()){
+        switch (e.getCurrentItem().getType()) {
             case OAK_FENCE_GATE:
 
                 //See if they are at the max tier or not
                 if (Utils.getNextCapacity(collector.getStorageCapacity()).equalsIgnoreCase("AT MAX")){
-                    p.sendMessage(Config.MAX_STORAGE);
+                    p.sendMessage(ColorTranslator.translateColorCodes(ChunkCollector.getPlugin().getConfig().getString("Messages.max-storage")));
                 }else{
                     //check to see if they can afford the next tier
                     if (ChunkCollector.getEconomy().getBalance(p) >= Utils.getCapacityUpgradePrice(collector.getStorageCapacity())) {
@@ -58,19 +66,19 @@ public class CollectorUpgradeMenu extends Menu {
                             System.out.println(response.errorMessage);
                         } else {
 
-                            p.sendMessage(Config.UPGRADE_STORAGE);
+                            p.sendMessage(ColorTranslator.translateColorCodes(ChunkCollector.getPlugin().getConfig().getString("Messages.upgrade-complete.storage")));
                             p.sendMessage(ChatColor.GREEN + "$" + Utils.getCapacityUpgradePrice(collector.getStorageCapacity()) + ChatColor.YELLOW + " has been deducted from your balance.");
 
                             //they have enough, do the upgrade.
                             collector.setStorageCapacity(collector.getStorageCapacity() + 1);
-                            Database.updateCollector(collector);
+                            Database.getCollectorDataAccess().update(collector);
 
                             //reload the gui
                             new CollectorUpgradeMenu(playerMenuUtility).open();
                         }
 
                     } else {
-                        p.sendMessage(Config.CANT_AFFORD_UPGRADE);
+                        p.sendMessage(ColorTranslator.translateColorCodes(ChunkCollector.getPlugin().getConfig().getString("Messages.cant-afford-upgrade")));
                     }
                 }
 
@@ -79,7 +87,7 @@ public class CollectorUpgradeMenu extends Menu {
 
                 //see if they are already at max tier
                 if (collector.getFortuneLevel() == 3) {
-                    p.sendMessage(Config.MAX_FORTUNE);
+                    p.sendMessage(ColorTranslator.translateColorCodes(ChunkCollector.getPlugin().getConfig().getString("Messages.max-fortune")));
                 } else {
                     if (ChunkCollector.getEconomy().getBalance(p) >= Utils.getFortuneUpgradePrice(collector.getFortuneLevel())) {
 
@@ -90,19 +98,19 @@ public class CollectorUpgradeMenu extends Menu {
                             System.out.println(response.errorMessage);
                         } else {
 
-                            p.sendMessage(Config.UPGRADE_FORTUNE);
+                            p.sendMessage(ColorTranslator.translateColorCodes(ChunkCollector.getPlugin().getConfig().getString("Messages.upgrade-complete.fortune")));
                             p.sendMessage(ChatColor.GREEN + "$" + Utils.getFortuneUpgradePrice(collector.getFortuneLevel()) + ChatColor.YELLOW + " has been deducted from your balance.");
 
                             //do the upgrade
                             collector.setFortuneLevel(collector.getFortuneLevel() + 1);
-                            Database.updateCollector(collector);
+                            Database.getCollectorDataAccess().update(collector);
 
                             //reload the gui
                             new CollectorUpgradeMenu(playerMenuUtility).open();
                         }
 
                     } else {
-                        p.sendMessage(Config.CANT_AFFORD_UPGRADE);
+                        p.sendMessage(ColorTranslator.translateColorCodes(ChunkCollector.getPlugin().getConfig().getString("Messages.cant-afford-upgrade")));
                     }
                 }
 
@@ -117,9 +125,7 @@ public class CollectorUpgradeMenu extends Menu {
     @Override
     public void setMenuItems() {
 
-        Collector collector = Database.findByID(playerMenuUtility.getCollectorID());
-
-        if (collector.getType() == Database.CollectionType.CROP) {
+        if (collector.getType() == CollectionType.CROP) {
 
             ItemStack fortune = new ItemStack(Material.EXPERIENCE_BOTTLE, 1);
             ItemMeta fortuneUpgrade = fortune.getItemMeta();

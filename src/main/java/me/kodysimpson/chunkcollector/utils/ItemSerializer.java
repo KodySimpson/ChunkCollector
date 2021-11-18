@@ -1,16 +1,16 @@
 package me.kodysimpson.chunkcollector.utils;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 
-public class BukkitSerialization {
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+
+public class ItemSerializer {
     public static String toBase64(ArrayList<ItemStack> items) {
         try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -23,6 +23,8 @@ public class BukkitSerialization {
             for (int i = 0; i < items.size(); i++) {
                 dataOutput.writeObject(items.get(i));
             }
+
+            dataOutput.flush();
 
             // Serialize that array
             dataOutput.close();

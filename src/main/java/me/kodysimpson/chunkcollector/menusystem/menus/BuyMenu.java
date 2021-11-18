@@ -1,10 +1,13 @@
 package me.kodysimpson.chunkcollector.menusystem.menus;
 
 import me.kodysimpson.chunkcollector.ChunkCollector;
-import me.kodysimpson.chunkcollector.config.Config;
-import me.kodysimpson.chunkcollector.menusystem.Menu;
-import me.kodysimpson.chunkcollector.menusystem.PlayerMenuUtility;
-import me.kodysimpson.chunkcollector.utils.Database;
+import me.kodysimpson.chunkcollector.utils.CollectionType;
+import me.kodysimpson.simpapi.colors.ColorTranslator;
+import me.kodysimpson.simpapi.exceptions.MenuManagerException;
+import me.kodysimpson.simpapi.exceptions.MenuManagerNotSetupException;
+import me.kodysimpson.simpapi.menu.Menu;
+import me.kodysimpson.simpapi.menu.MenuManager;
+import me.kodysimpson.simpapi.menu.PlayerMenuUtility;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -17,34 +20,36 @@ public class BuyMenu extends Menu {
 
     @Override
     public String getMenuName() {
-        return ChatColor.translateAlternateColorCodes('&', ChunkCollector.getPlugin().getConfig().getString("Menu Titles.Buy Menu"));
+        return ColorTranslator.translateColorCodes(ChunkCollector.getPlugin().getConfig().getString("Menu Titles.Buy Menu"));
     }
 
     @Override
     public int getSlots() {
-        return 27;
+        return 36;
     }
 
     @Override
-    public void handleMenu(InventoryClickEvent e) {
+    public boolean cancelAllClicks() {
+        return true;
+    }
+
+    @Override
+    public void handleMenu(InventoryClickEvent e) throws MenuManagerException, MenuManagerNotSetupException {
 
         switch (e.getCurrentItem().getType()) {
-            case DIAMOND_SWORD:
-
-                playerMenuUtility.setBuyType(Database.CollectionType.DROP);
-                new ConfirmBuyMenu(playerMenuUtility).open();
-
-                break;
-            case BREAD:
-
-                playerMenuUtility.setBuyType(Database.CollectionType.CROP);
-                new ConfirmBuyMenu(playerMenuUtility).open();
-
-                break;
-            case BARRIER:
-
-                playerMenuUtility.getOwner().closeInventory();
-                break;
+            case DIAMOND_SWORD -> {
+                playerMenuUtility.setData(MenuData.BUY_TYPE, CollectionType.DROP);
+                MenuManager.openMenu(ConfirmBuyMenu.class, p);
+            }
+            case BREAD -> {
+                playerMenuUtility.setData(MenuData.BUY_TYPE, CollectionType.CROP);
+                MenuManager.openMenu(ConfirmBuyMenu.class, p);
+            }
+            case GOLD_ORE -> {
+                playerMenuUtility.setData(MenuData.BUY_TYPE, CollectionType.ORE);
+                MenuManager.openMenu(ConfirmBuyMenu.class, p);
+            }
+            case BARRIER -> playerMenuUtility.getOwner().closeInventory();
         }
 
     }
@@ -53,13 +58,16 @@ public class BuyMenu extends Menu {
     public void setMenuItems() {
 
         inventory.setItem(11, makeItem(Material.DIAMOND_SWORD, ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "Mob Drop Collector",
-                ChatColor.YELLOW + "Automatically collects mob drops."));
+                ChatColor.YELLOW + "Automagically collects mob drops."));
 
-        inventory.setItem(13, makeItem(Material.BARRIER, ChatColor.RED + "" + ChatColor.BOLD + "Nevermind"));
+        inventory.setItem(13, makeItem(Material.GOLD_ORE, ChatColor.GOLD + "" + ChatColor.BOLD + "Ore Collector",
+                ChatColor.WHITE + "Automagically mines blocks."));
 
-        inventory.setItem(15, makeItem(Material.BREAD, ChatColor.YELLOW + "" + ChatColor.BOLD + "Food Collector",
-                ChatColor.GREEN + "Automatically collects fully ",
+        inventory.setItem(15, makeItem(Material.BREAD, ChatColor.YELLOW + "" + ChatColor.BOLD + "Crop Collector",
+                ChatColor.GREEN + "Automagically collects fully ",
                 ChatColor.GREEN + "grown crops."));
+
+        inventory.setItem(31, makeItem(Material.BARRIER, ChatColor.RED + "" + ChatColor.BOLD + "Nevermind"));
 
         setFillerGlass();
     }

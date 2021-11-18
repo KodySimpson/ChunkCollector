@@ -1,9 +1,9 @@
 package me.kodysimpson.chunkcollector.commands.subcommands;
 
 import me.kodysimpson.chunkcollector.ChunkCollector;
-import me.kodysimpson.chunkcollector.commands.SubCommand;
-import me.kodysimpson.chunkcollector.config.Config;
-import org.bukkit.ChatColor;
+import me.kodysimpson.simpapi.colors.ColorTranslator;
+import me.kodysimpson.simpapi.command.SubCommand;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.List;
@@ -12,36 +12,45 @@ public class ReloadCommand extends SubCommand {
 
     @Override
     public String getName() {
-        return ChatColor.translateAlternateColorCodes('&', ChunkCollector.getPlugin().getConfig().getString("Commands.Reload.name"));
+        return ColorTranslator.translateColorCodes(ChunkCollector.getPlugin().getConfig().getString("Commands.Reload.name"));
+    }
+
+    @Override
+    public List<String> getAliases() {
+        return null;
     }
 
     @Override
     public String getDescription() {
-        return ChatColor.translateAlternateColorCodes('&', ChunkCollector.getPlugin().getConfig().getString("Commands.Reload.description"));
+        return ColorTranslator.translateColorCodes(ChunkCollector.getPlugin().getConfig().getString("Commands.Reload.description"));
     }
 
     @Override
     public String getSyntax() {
-        return ChatColor.translateAlternateColorCodes('&', ChunkCollector.getPlugin().getConfig().getString("Commands.Reload.syntax"));
+        return ColorTranslator.translateColorCodes(ChunkCollector.getPlugin().getConfig().getString("Commands.Reload.syntax"));
     }
 
     @Override
-    public void perform(Player player, String[] args) {
+    public void perform(CommandSender sender, String[] args) {
 
-        if (player.hasPermission("chunkcollector.admin") || player.hasPermission("chunkcollector.reload")){
+        if (sender instanceof Player p) {
+            if (p.hasPermission("chunkcollector.admin") || p.hasPermission("chunkcollector.reload")) {
 
-            ChunkCollector.getPlugin().reloadConfig();
+                ChunkCollector.getPlugin().reloadConfig();
 
-            player.sendMessage(Config.RELOADED);
+                p.sendMessage(ColorTranslator.translateColorCodes(ChunkCollector.getPlugin().getConfig().getString("Messages.reloaded")));
 
-        }else{
-            player.sendMessage(Config.NO_PERMISSION);
+            } else {
+                p.sendMessage(ColorTranslator.translateColorCodes(ChunkCollector.getPlugin().getConfig().getString("Messages.no-permission")));
+            }
+        } else {
+            sender.sendMessage("You must be a player to run this command.");
         }
 
     }
 
     @Override
-    public List<String> tabComplete(Player player, String[] args) {
+    public List<String> getSubcommandArguments(Player player, String[] args) {
         return null;
     }
 }

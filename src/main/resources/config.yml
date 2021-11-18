@@ -7,14 +7,29 @@ worlds:
 collector-cost:
   drop: 10000 #Drop collectors will cost 10,000
   crop: 2500 #crop collectors will cost 2,500
+  ore: 50000
 
 ##Set whether collectors can be destroyed by explosions or not
 bomb-proof: true #if true, explosions will not affect collectors
+
+##Set whether the collector(if a hopper) should be able to pick up and transfer items
+hopper-transfer: true
 
 ##Set the duration between collections. 1200 ticks = 1 minute
 # http://mapmaking.fr/tick/
 # NOTE: Restart required after changing this option
 collection-duration: 1200 #Collectors will pick up items/harvest crops every 1200 ticks
+
+##Auto-Kill Mobs
+#Decide whether you want mob collectors to automatically kill mobs rather than picking up the just mob drops
+#Items will not drop onto the ground, they will directly go into the collector
+auto-kill: false
+#How much time in between automatically killing mobs
+auto-kill-interval: 1100 #Server will auto kill mobs near a drop collector every 1100 ticks
+
+#If this is true, drop collectors will put them mob drops into the collector
+#directly after a mob dies, instead of dropping the items on the ground.
+mob-drop-auto-pickup: false
 
 #############################################
 ##Collector item Pricing
@@ -59,6 +74,30 @@ crop-pricing:
   CARROT: 1.75
   NETHER_WART: 2.0
   POISONOUS_POTATO: 1.75
+  CACTUS: 1.0
+  SUGARCANE: 1.0
+
+mineable-blocks:
+  - 'COAL_ORE'
+  - 'IRON_ORE'
+  - 'GOLD_ORE'
+  - 'NETHER_GOLD_ORE'
+  - 'DIAMOND_ORE'
+  - 'LAPIS_ORE'
+  - 'REDSTONE_ORE'
+  - 'ANCIENT_DEBRIS'
+
+ore-pricing:
+  COAL: 5.0
+  IRON_ORE: 5.0
+  GOLD_ORE: 5.0
+  NETHER_GOLD_ORE: 5.0
+  DIAMOND: 5.0
+  LAPIS_LAZULI: 5.0
+  QUARTZ: 5.0
+  REDSTONE: 5.0
+  ANCIENT_DEBRIS: 5.0
+
 #############################################
 
 ############################################
@@ -90,6 +129,14 @@ fortune-prices:
 
 ############################################
 
+############################################
+##Hologram Configuration
+hologram:
+  enabled: true
+  drop: '&#e057ff&lDrop Collector'
+  crop: '&#fafa34&lCrop Collector'
+  ore: '&6&lOre Collector'
+
 ###########################################
 ##Menu Title Configuration
 Menu Titles:
@@ -97,12 +144,15 @@ Menu Titles:
   Confirm-Buy Menu:
     drop: 'Buy Drop Collector?'
     crop: 'Buy Crop Collector?'
+    ore: 'Buy Ore Collector?'
   Collector Menu:
     drop: 'Mob Drop Collector'
     crop: 'Crop Collector'
+    ore: 'Ore Collector'
   Collector-Storage Menu:
     drop: 'Collected Mob Drops'
     crop: 'Collected Crop Produce'
+    ore: 'Collected Ore Produce'
   Collector-Upgrade Menu: 'Collector Upgrade Options'
 ############################################
 
@@ -111,12 +161,14 @@ Menu Titles:
 Names:
   drop: '&dMob Collector'
   crop: '&eCrop Collector'
+  ore: '&6Ore Collector'
 
 #Use these material names: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
 #Ensure that you choose a placeable block
 Materials:
   drop: 'HOPPER'
   crop: 'HOPPER'
+  ore: 'HOPPER'
 ############################################
 
 ###########################################
@@ -126,9 +178,11 @@ Messages:
   got-collector:
     drop: '&aDrop Collector obtained.'
     crop: '&aCrop Collector obtained.'
+    ore: '&aOre Collector obtained.'
   given-collector:
     drop: '&aYou have been given a Drop Collector.'
     crop: '&aYou have been given a Crop Collector.'
+    ore: '&aYou have been given an Ore Collector.'
   reloaded: '&aThe config.yml has been reloaded.'
   upgrade-complete:
     storage: '&eCollector Storage Capacity has been upgraded.'

@@ -3,6 +3,8 @@ package me.kodysimpson.chunkcollector.utils;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import me.kodysimpson.chunkcollector.ChunkCollector;
+import me.kodysimpson.chunkcollector.database.Database;
+import me.kodysimpson.chunkcollector.model.Collector;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -14,32 +16,33 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.TileState;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class Utils {
 
-    public static ArrayList<ItemStack> combine( ArrayList<ItemStack> items ) {
-
+    public static ArrayList<ItemStack> combine(ArrayList<ItemStack> itemStacks) {
         Multimap<Material, Integer> map = ArrayListMultimap.create();
-        for (ItemStack item: items) {
+        for (ItemStack item : itemStacks) {
             if (!map.containsKey(item.getType())) {
                 map.put(item.getType(), item.getAmount());
-            }else{
+            } else {
                 ArrayList<Integer> value = new ArrayList<>(map.get(item.getType()));
-                if (value.get(value.size()-1)+item.getAmount()<=item.getType().getMaxStackSize()) {
-                    value.set(value.size()-1, value.get(value.size()-1)+item.getAmount());
-                }else{
-                    int k = value.get(value.size()-1);
-                    value.set(value.size()-1, item.getType().getMaxStackSize());
-                    value.add(item.getAmount()-(item.getType().getMaxStackSize()-k));
+                if (value.get(value.size() - 1) + item.getAmount() <= item.getType().getMaxStackSize()) {
+                    value.set(value.size() - 1, value.get(value.size() - 1) + item.getAmount());
+                } else {
+                    int k = value.get(value.size() - 1);
+                    value.set(value.size() - 1, item.getType().getMaxStackSize());
+                    value.add(item.getAmount() - (item.getType().getMaxStackSize() - k));
                 }
-                map.replaceValues(item.getType(),value);
+                map.replaceValues(item.getType(), value);
             }
         }
         ArrayList<ItemStack> sortedList = new ArrayList<>();
@@ -56,44 +59,58 @@ public class Utils {
     }
 
 
-    public static ItemStack makeCollector(Player p, Database.CollectionType type){
+    public static ItemStack makeCollector(Player p, CollectionType type) {
 
         int id = 0;
 
-        ItemStack collector = null;
+        ItemStack collectorItem = null;
         ItemMeta collectorMeta = null;
 
-        if (type == Database.CollectionType.DROP){
+        if (type == CollectionType.DROP) {
 
-            collector = new ItemStack(Material.valueOf(ChunkCollector.getPlugin().getConfig().getString("Materials.drop")), 1);
-            collectorMeta = collector.getItemMeta();
+            collectorItem = new ItemStack(Material.valueOf(ChunkCollector.getPlugin().getConfig().getString("Materials.drop")), 1);
+            collectorMeta = collectorItem.getItemMeta();
 
             collectorMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', ChunkCollector.getPlugin().getConfig().getString("Names.drop")));
 
             //Create collector and give it to the player if created succesfully
-            id = Database.createCollector(p.getUniqueId(), Database.CollectionType.DROP);
-        }else{
 
-            collector = new ItemStack(Material.valueOf(ChunkCollector.getPlugin().getConfig().getString("Materials.crop")), 1);
-            collectorMeta = collector.getItemMeta();
+            Collector collector = new Collector(p.getUniqueId(), CollectionType.DROP);
+            id = Database.getCollectorDataAccess().insert(collector).getId();
+        } else if (type == CollectionType.CROP) {
+
+            collectorItem = new ItemStack(Material.valueOf(ChunkCollector.getPlugin().getConfig().getString("Materials.crop")), 1);
+            collectorMeta = collectorItem.getItemMeta();
 
             collectorMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', ChunkCollector.getPlugin().getConfig().getString("Names.crop")));
 
             //Create collector and give it to the player if created succesfully
-            id = Database.createCollector(p.getUniqueId(), Database.CollectionType.CROP);
+            Collector collector = new Collector(p.getUniqueId(), CollectionType.CROP);
+            id = Database.getCollectorDataAccess().insert(collector).getId();
+        } else if (type == CollectionType.ORE) {
+
+            collectorItem = new ItemStack(Material.valueOf(ChunkCollector.getPlugin().getConfig().getString("Materials.ore")), 1);
+            collectorMeta = collectorItem.getItemMeta();
+
+            collectorMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', ChunkCollector.getPlugin().getConfig().getString("Names.ore")));
+
+            //Create collector and give it to the player if created succesfully
+            Collector collector = new Collector(p.getUniqueId(), CollectionType.ORE);
+            id = Database.getCollectorDataAccess().insert(collector).getId();
         }
 
         //Collector ID will be zero if was unable to create in DB
         if (id != 0){
             collectorMeta.getPersistentDataContainer().set(new NamespacedKey(ChunkCollector.getPlugin(), "collector-id"), PersistentDataType.INTEGER, id);
 
-            collector.setItemMeta(collectorMeta);
+            collectorItem.setItemMeta(collectorMeta);
 
-            return collector;
+            return collectorItem;
         }else{
             p.sendMessage("Error creating collector.");
             return null;
         }
+
     }
 
     //See if the chunk provided already contains a chunk collector
@@ -110,7 +127,7 @@ public class Utils {
         return false;
     }
 
-    public static boolean isMobDrop(Item item){
+    public static boolean isMobDrop(Item item) {
 
         ArrayList<Material> mob_drops = (ArrayList<Material>) ChunkCollector.getPlugin().getConfig().getConfigurationSection("mob-drops").getKeys(false)
                 .stream()
@@ -120,13 +137,22 @@ public class Utils {
         return mob_drops.contains(item.getItemStack().getType());
     }
 
-    public static double getItemPrice(Material item, Database.CollectionType type){
+    public static boolean isMineableBlock(Material type) {
 
-        switch (type){
+        List<String> blocks = ChunkCollector.getPlugin().getConfig().getStringList("mineable-blocks");
+
+        return blocks.contains(type.toString());
+    }
+
+    public static double getItemPrice(Material item, CollectionType type) {
+
+        switch (type) {
             case DROP:
                 return ChunkCollector.getPlugin().getConfig().getDouble("mob-drops." + item.toString());
             case CROP:
                 return ChunkCollector.getPlugin().getConfig().getDouble("crop-pricing." + item.toString());
+            case ORE:
+                return ChunkCollector.getPlugin().getConfig().getDouble("ore-pricing." + item.toString());
         }
 
         return 0.0;
@@ -208,9 +234,9 @@ public class Utils {
                     text.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, constructReceipt(receiptItems)));
 
                     p.sendMessage(" ");
-                    if (collector.getType() == Database.CollectionType.DROP){
+                    if (collector.getType() == CollectionType.DROP) {
                         p.sendMessage(ChatColor.GREEN + "All items in your " + ChatColor.LIGHT_PURPLE + "" + ChatColor.BOLD + "Drop Collector" + ChatColor.GREEN + " have been sold.");
-                    }else{
+                    } else {
                         p.sendMessage(ChatColor.GREEN + "All items in your " + ChatColor.YELLOW + "" + ChatColor.BOLD + "Crop Collector" + ChatColor.GREEN + " have been sold.");
                     }
                     p.sendMessage(ChatColor.GRAY + "Total Earned: " + ChatColor.GREEN + "$" + String.format("%.2f", earned));
@@ -220,7 +246,7 @@ public class Utils {
                     p.spigot().sendMessage(text);
                 }else{
                     //If they are not online, add the sell data to be gotten on next join
-                    Database.insertOfflineProfit(player, earned, itemsSold);
+                    Database.getCollectorDataAccess().insertOfflineProfit(player, earned, itemsSold);
                 }
 
                 //Set earnings
@@ -229,7 +255,7 @@ public class Utils {
 
                 //Update the collector to reflect the earnings
                 collector.getItems().clear();
-                Database.updateCollector(collector);
+                Database.getCollectorDataAccess().update(collector);
             }
 
         }
@@ -261,7 +287,7 @@ public class Utils {
 
                 });
 
-        Database.updateCollector(collector);
+        Database.getCollectorDataAccess().update(collector);
     }
 
     public static int getCapacityAmount(int currentLevel){
@@ -309,6 +335,26 @@ public class Utils {
         return 0.0;
     }
 
+    public static void enableDisableCollector(int id) {
 
+        Collector collector = Database.getCollectorDataAccess().findById(id);
+
+        Player owner = Bukkit.getPlayer(collector.getOwnerUUID());
+
+        if (collector.isEnabled()) {
+            collector.setEnabled(false);
+            owner.sendMessage(ChatColor.RED + "Collector disabled.");
+        } else {
+            collector.setEnabled(true);
+            owner.sendMessage(ChatColor.GREEN + "Collector enabled.");
+        }
+
+        Database.getCollectorDataAccess().update(collector);
+    }
+
+    public static void updateCollectorHolograms(Collector collector) {
+
+
+    }
 
 }

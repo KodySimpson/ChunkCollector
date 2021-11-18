@@ -1,5 +1,7 @@
-package me.kodysimpson.chunkcollector.utils;
+package me.kodysimpson.chunkcollector.model;
 
+import me.kodysimpson.chunkcollector.utils.CollectionType;
+import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -13,16 +15,25 @@ public class Collector {
 
     private int id;
     private UUID ownerUUID;
-    private Database.CollectionType type;
+    private CollectionType type;
     private int storageCapacity;
     private int fortuneLevel;
+    private boolean enabled;
 
     private long sold;
     private double earned;
 
     private ArrayList<ItemStack> items;
 
-    public Collector(UUID ownerUUID, int id, ArrayList<ItemStack> items, Database.CollectionType type, int storageCapacity, long sold, double earned, int fortuneLevel) {
+    public Collector() {
+    }
+
+    public Collector(UUID ownerUUID, CollectionType type) {
+        this.ownerUUID = ownerUUID;
+        this.type = type;
+    }
+
+    public Collector(UUID ownerUUID, int id, ArrayList<ItemStack> items, CollectionType type, int storageCapacity, long sold, double earned, int fortuneLevel, boolean enabled) {
         this.ownerUUID = ownerUUID;
         this.id = id;
         this.items = items;
@@ -31,6 +42,7 @@ public class Collector {
         this.sold = sold;
         this.earned = earned;
         this.fortuneLevel = fortuneLevel;
+        this.enabled = enabled;
     }
 
     public int getId() {
@@ -49,11 +61,11 @@ public class Collector {
         this.ownerUUID = ownerUUID;
     }
 
-    public Database.CollectionType getType() {
+    public CollectionType getType() {
         return type;
     }
 
-    public void setType(Database.CollectionType type) {
+    public void setType(CollectionType type) {
         this.type = type;
     }
 
@@ -95,5 +107,13 @@ public class Collector {
 
     public void setFortuneLevel(int fortuneLevel) {
         this.fortuneLevel = fortuneLevel;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 }

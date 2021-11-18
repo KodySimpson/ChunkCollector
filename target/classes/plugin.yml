@@ -1,12 +1,31 @@
 name: ChunkCollector
-version: 1.0.6
+version: 3.0
 website: ggservers.com
 author: Illuminatiiiiii
 main: me.kodysimpson.chunkcollector.ChunkCollector
-api-version: 1.13
+api-version: 1.17
 softdepend:
   - vault
 commands:
   collector:
     description: Commands for Chunk Collector
     usage: /collector
+permissions:
+  chunkcollector.buy:
+    default: op
+    description: Allows players to buy collectors through a GUI
+  chunkcollector.give:
+    default: op
+    description: Give yourself or someone else a chunk collector
+  chunkcollector.admin:
+    default: op
+    description: Allows access to admin commands
+  chunkcollector.break:
+    default: op
+    description: Allows the breaking of any collector
+  chunkcollector.open:
+    default: op
+    description: Allows the opening of any collector
+  chunkcollector.reload:
+    default: op
+    description: Allows you to reload the config file
